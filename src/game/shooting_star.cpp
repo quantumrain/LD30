@@ -2,10 +2,12 @@
 #include "Common.h"
 #include "Game.h"
 
-shooting_star::shooting_star() : entity(ET_SHOOTING_STAR) {
+shooting_star::shooting_star() : unit(ET_SHOOTING_STAR) {
 	_flags |= EF_USE_OUTER_LIMIT | EF_ENEMY;
 	_colour = colours::AQUA;
 	_radius = 6.0f;
+
+//	instant_spawn();
 }
 
 void shooting_star::tick() {
@@ -13,12 +15,12 @@ void shooting_star::tick() {
 
 void shooting_star::post_tick() {
 	if (overlaps_player(this)) {
-		SoundPlay(sound_id::DIT, 1.0f, 1.0f);
+		//SoundPlay(sound_id::DIT, 1.0f, 1.0f);
 		destroy();
 	}
 }
 
-void shooting_star::hit_wall(int side) {
+void shooting_star::hit_wall(int clipped) {
 	destroy();
 }
 

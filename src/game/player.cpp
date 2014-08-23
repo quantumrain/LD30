@@ -2,7 +2,7 @@
 #include "Common.h"
 #include "Game.h"
 
-player::player() : entity(ET_PLAYER), _reload_time() {
+player::player() : unit(ET_PLAYER), _reload_time() {
 	_flags |= EF_PLAYER;
 	_colour = colours::ORANGE * 1.5f;
 	_radius = 6.0f;

@@ -24,7 +24,7 @@ void bullet::post_tick() {
 	}
 }
 
-void bullet::hit_wall(int side) {
+void bullet::hit_wall(int clipped) {
 	_time = 0;
 	spawn_shooting_star(_world, this);
 }

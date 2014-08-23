@@ -147,7 +147,7 @@ entity* find_enemy_near_line(world* w, vec2 from, vec2 to, float r) {
 	d /= l;
 
 	for(auto e : w->entities) {
-		if (e->_flags & EF_DESTROYED)
+		if (e->_flags & (EF_DESTROYED | EF_SPAWNING))
 			continue;
 
 		if (!(e->_flags & EF_ENEMY))
@@ -166,4 +166,35 @@ entity* find_enemy_near_line(world* w, vec2 from, vec2 to, float r) {
 	}
 
 	return best_e;
+}
+
+void avoid_crowd(world* w, entity* self) {
+	for(auto e : w->entities) {
+		if (e == self)
+			continue;
+
+		if (e->_flags & EF_DESTROYED)
+			continue;
+
+		if (e->_type != self->_type)
+			continue;
+
+		vec2	d		= self->_pos - e->_pos;
+		float	min_l	= self->_radius + e->_radius;
+
+		if (length_sq(d) > square(min_l))
+			continue;
+
+		float l = length(d);
+
+		if (l < 0.0001f)
+			d = vec2(1.0f, 0.0f);
+		else
+			d /= l;
+
+		d *= 8.0f;
+
+		self->_vel += d;
+		e->_vel -= d;
+	}
 }

@@ -12,7 +12,9 @@ enum entity_flag {
 	EF_USE_OUTER_LIMIT	= 0x2,
 	EF_PLAYER			= 0x4,
 	EF_BULLET			= 0x8,
-	EF_ENEMY			= 0x10
+	EF_ENEMY			= 0x10,
+	EF_SPAWNING			= 0x20,
+	EF_UNIT				= 0x40
 };
 
 enum entity_type {
@@ -35,7 +37,7 @@ struct entity {
 
 	virtual void tick();
 	virtual void post_tick();
-	virtual void hit_wall(int side);
+	virtual void hit_wall(int clipped);
 	virtual void draw(draw_context* dc);
 
 	world* _world;
@@ -46,9 +48,16 @@ struct entity {
 	vec2 _vel;
 	float _radius;
 	colour _colour;
+	int _spawn_timer;
 };
 
-struct player : entity {
+struct unit : entity {
+	unit(entity_type type);
+
+	void instant_spawn();
+};
+
+struct player : unit {
 	player();
 
 	virtual void tick();
@@ -64,25 +73,25 @@ struct bullet : entity {
 
 	virtual void tick();
 	virtual void post_tick();
-	virtual void hit_wall(int side);
+	virtual void hit_wall(int clipped);
 
 	int _time;
 };
 
-struct tracker : entity {
+struct tracker : unit {
 	tracker();
 
 	virtual void tick();
 	virtual void post_tick();
-	virtual void hit_wall(int side);
+	virtual void hit_wall(int clipped);
 };
 
-struct shooting_star : entity {
+struct shooting_star : unit {
 	shooting_star();
 
 	virtual void tick();
 	virtual void post_tick();
-	virtual void hit_wall(int side);
+	virtual void hit_wall(int clipped);
 };
 
 // world
@@ -115,6 +124,7 @@ player* find_nearest_player(world* w, vec2 p);
 bool within(entity* a, entity* b, float d);
 bool overlaps_player(entity* e);
 entity* find_enemy_near_line(world* w, vec2 from, vec2 to, float r);
+void avoid_crowd(world* w, entity* self);
 
 void spawn_shooting_star(world* w, entity* instigator);
 

@@ -14,6 +14,10 @@ IDirect3D9* gD3d;
 IDirect3DDevice9* gDevice;
 
 bool g_quit;
+bool g_capture_mouse = true;
+bool g_mouse_is_captured;
+bool g_win_in_menu;
+bool g_win_in_size;
 
 bool gHasFocus;
 DWORD gKeyDown[KEY_MAX];
@@ -46,16 +50,14 @@ void GetPresentParams(D3DPRESENT_PARAMETERS* pp) {
 	pp->BackBufferHeight		= g_view_size.y;
 	pp->BackBufferFormat		= D3DFMT_A8R8G8B8;
 	pp->hDeviceWindow			= gMainWnd;
-	pp->PresentationInterval	= D3DPRESENT_INTERVAL_ONE;
+	pp->PresentationInterval	= D3DPRESENT_INTERVAL_DEFAULT;
 }
 
 void ResetDevice() {
 	debug("device reset");
 
 	if (gDevice) {
-		D3DPRESENT_PARAMETERS pp = { };
-		GetPresentParams(&pp);
-		gDevice->Reset(&pp);
+		SendMessage(gMainWnd, WM_APP, 0, 0);
 	}
 }
 
@@ -98,12 +100,23 @@ void DoFrame() {
 		GpuInit();
 		RenderInit();
 
-		/*if (gHasFocus) {
+		g_mouse_is_captured = false;
+	}
+
+	if (gHasFocus && g_capture_mouse && !g_win_in_menu && !g_win_in_size) {
+		if (!g_mouse_is_captured) {
 			RECT rc;
 			GetClientRect(gMainWnd, &rc);
 			MapWindowPoints(gMainWnd, 0, (POINT*)&rc, 2);
 			ClipCursor(&rc);
-		}*/
+			g_mouse_is_captured = true;
+		}
+	}
+	else {
+		if (g_mouse_is_captured) {
+			ClipCursor(0);
+			g_mouse_is_captured = false;
+		}
 	}
 
 	static int stick_check_time = 0;
@@ -126,7 +139,7 @@ void DoFrame() {
 	}
 
 	if (gDevice) {
-		u64 t_begin = timer_ticks();
+		static u64 t_begin = timer_ticks();
 
 		gDevice->BeginScene();
 
@@ -152,6 +165,8 @@ void DoFrame() {
 		if (timer_ticks_to_secs(t_end - t_begin) > (1.1f / 60.0f)) {
 			debug("%f : %f", timer_ticks_to_secs(t_end - t_begin) * 1000, timer_ticks_to_secs(t_mid - t_begin) * 1000);
 		}
+
+		t_begin = t_end;
 	}
 }
 
@@ -221,6 +236,19 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) 
 				memset(gKeyDown, 0, sizeof(gKeyDown));
 			}
 		break;
+
+		case WM_APP: {
+			D3DPRESENT_PARAMETERS pp = { };
+			GetPresentParams(&pp);
+			gDevice->Reset(&pp); // oh d3d9 how I hate thee
+		}
+		break;
+
+		case WM_ENTERMENULOOP: g_win_in_menu = true; break;
+		case WM_EXITMENULOOP: g_win_in_menu = false; break;
+
+		case WM_ENTERSIZEMOVE: g_win_in_size = true; break;
+		case WM_EXITSIZEMOVE: g_win_in_size = false; break;
 
 		// Keys
 
@@ -306,6 +334,8 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) 
 
 		case WM_CAPTURECHANGED:
 			gMouseButtons = 0;
+			g_win_in_menu = false;
+			g_win_in_size = false;
 		return 0;
 	}
 
