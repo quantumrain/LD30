@@ -18,10 +18,7 @@ void tracker::tick() {
 }
 
 void tracker::post_tick() {
-	if (overlaps_player(this)) {
-		//SoundPlay(sound_id::DIT, 1.0f, 1.0f);
-		destroy();
-	}
+	unit::post_tick();
 }
 
 void tracker::hit_wall(int clipped) {

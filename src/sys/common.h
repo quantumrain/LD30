@@ -59,10 +59,14 @@ bool overlaps_rect(vec2 c0, vec2 s0, vec2 c1, vec2 s1);
 
 enum key_press {
 	KEY_NONE,
-	KEY_UP,
-	KEY_DOWN,
-	KEY_LEFT,
-	KEY_RIGHT,
+	KEY_L_UP,
+	KEY_L_DOWN,
+	KEY_L_LEFT,
+	KEY_L_RIGHT,
+	KEY_R_UP,
+	KEY_R_DOWN,
+	KEY_R_LEFT,
+	KEY_R_RIGHT,
 	KEY_FIRE,
 	KEY_ALT_FIRE,
 	KEY_1,
@@ -101,6 +105,8 @@ extern float g_view_aspect;
 extern DWORD gKeyDown[KEY_MAX];
 extern vec2i gMousePos;
 extern int gMouseButtons;
+extern int gMouseTime;
+extern bool gUsingMouse;
 
 extern vec2 gJoyLeft;
 extern vec2 gJoyRight;

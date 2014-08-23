@@ -23,6 +23,9 @@ bool gHasFocus;
 DWORD gKeyDown[KEY_MAX];
 vec2i gMousePos;
 int gMouseButtons;
+int gMouseTime;
+bool gUsingMouse;
+vec2i gOldMousePos;
 
 int g_LocKeyW;
 int g_LocKeyS;
@@ -138,6 +141,20 @@ void DoFrame() {
 		}
 	}
 
+	if (gOldMousePos == gMousePos) {
+		if (++gMouseTime > 60) {
+			if ((length_sq(gJoyRight) > 0.2) || is_key_down(KEY_R_LEFT) || is_key_down(KEY_R_RIGHT) || is_key_down(KEY_R_UP) || is_key_down(KEY_R_DOWN))
+				gUsingMouse = false;
+		}
+		else
+			gUsingMouse = true;
+	}
+	else {
+		gUsingMouse = true;
+		gOldMousePos = gMousePos;
+		gMouseTime = 0;
+	}
+
 	if (gDevice) {
 		static u64 t_begin = timer_ticks();
 
@@ -181,14 +198,10 @@ DWORD WINAPI GameLoop(void*) {
 
 int which_key(int c, bool shifted) {
 	switch(c) {
-		case VK_UP:		return KEY_UP;
-		case VK_DOWN:	return KEY_DOWN;
-		case VK_LEFT:	return KEY_LEFT;
-		case VK_RIGHT:	return KEY_RIGHT;
-		case VK_NUMPAD8:return KEY_UP;
-		case VK_NUMPAD2:return KEY_DOWN;
-		case VK_NUMPAD4:return KEY_LEFT;
-		case VK_NUMPAD6:return KEY_RIGHT;
+		case VK_UP:		return KEY_R_UP;
+		case VK_DOWN:	return KEY_R_DOWN;
+		case VK_LEFT:	return KEY_R_LEFT;
+		case VK_RIGHT:	return KEY_R_RIGHT;
 		case VK_RETURN:	return KEY_FIRE;
 		case VK_SPACE:	return KEY_ALT_FIRE;
 		//case 'R':		return KEY_RESET;
@@ -207,10 +220,10 @@ int which_key(int c, bool shifted) {
 		case 27:		return KEY_RESET;
 	}
 
-	if (c == g_LocKeyW) return KEY_UP;
-	if (c == g_LocKeyS) return KEY_DOWN;
-	if (c == g_LocKeyA) return KEY_LEFT;
-	if (c == g_LocKeyD) return KEY_RIGHT;
+	if (c == g_LocKeyW) return KEY_L_UP;
+	if (c == g_LocKeyS) return KEY_L_DOWN;
+	if (c == g_LocKeyA) return KEY_L_LEFT;
+	if (c == g_LocKeyD) return KEY_L_RIGHT;
 
 	if (c == g_LocKeyZ) return KEY_ALT_FIRE;
 	if (c == g_LocKeyX) return KEY_FIRE;

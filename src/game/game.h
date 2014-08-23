@@ -55,6 +55,14 @@ struct unit : entity {
 	unit(entity_type type);
 
 	void instant_spawn();
+
+	virtual void post_tick();
+
+	virtual void damage();
+	virtual void flinch();
+	virtual void killed();
+
+	int _health;
 };
 
 struct player : unit {
@@ -102,6 +110,7 @@ struct world {
 	aabb2 outer_limit;
 	player* player;
 	list<entity> entities;
+	mat44 proj_view;
 
 	int spawn_time;
 	int level_time;
@@ -123,7 +132,7 @@ extern world g_world;
 player* find_nearest_player(world* w, vec2 p);
 bool within(entity* a, entity* b, float d);
 bool overlaps_player(entity* e);
-entity* find_enemy_near_line(world* w, vec2 from, vec2 to, float r);
+unit* find_enemy_near_line(world* w, vec2 from, vec2 to, float r);
 void avoid_crowd(world* w, entity* self);
 
 void spawn_shooting_star(world* w, entity* instigator);

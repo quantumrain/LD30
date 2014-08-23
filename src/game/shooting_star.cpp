@@ -14,10 +14,7 @@ void shooting_star::tick() {
 }
 
 void shooting_star::post_tick() {
-	if (overlaps_player(this)) {
-		//SoundPlay(sound_id::DIT, 1.0f, 1.0f);
-		destroy();
-	}
+	unit::post_tick();
 }
 
 void shooting_star::hit_wall(int clipped) {
@@ -30,6 +27,12 @@ void spawn_shooting_star(world* w, entity* instigator) {
 
 	shooting_star* ent = spawn_entity(w, new shooting_star);
 
-	ent->_pos = instigator->_pos;
-	ent->_vel = normalise(w->player->_pos - ent->_pos) * 250.0f + w->r.range(vec2(10.0f));
+	vec2 p = { w->r.range(w->limit.min.x, w->limit.max.x), lerp(w->limit.min.y, w->outer_limit.min.y, 0.5f) };
+	vec2 v = { 0.0f, w->r.range(100.0f, 150.0f) };
+
+	//vec2 p = instigator->_pos;
+	//vec2 v = normalise(w->player->_pos - ent->_pos) * 250.0f + w->r.range(vec2(10.0f));
+
+	ent->_pos = p;
+	ent->_vel = v;
 }

@@ -2,6 +2,8 @@
 #include "Common.h"
 #include "Game.h"
 
+vec2 g_mouse_screen;
+
 template<typename C, typename F> void for_all(C& c, F&& f) {
 	for(int i = 0; i < c.size(); i++) {
 		if (!(c[i]->_flags & EF_DESTROYED)) f(c[i]);
@@ -27,6 +29,8 @@ void world_init(world* w) {
 }
 
 void world_update(world* w) {
+	g_mouse_screen = (vec2)unproject(vec3(to_vec2(gMousePos), 0.0f), inverse(w->proj_view), to_vec2(g_view_size));
+
 	// update
 
 	// todo: players and bullets first, then enemies? possibly post spawn too?
@@ -74,20 +78,13 @@ void world_render(world* w, draw_context* dc) {
 
 	// camera
 
-	mat44 proj_view	= make_proj_view(camera_target, 90.0f, (360.0f + 20.0f) * zoom);
-	frustum fr		= make_frustum(proj_view);
+	w->proj_view = make_proj_view(camera_target, 90.0f, (360.0f + 20.0f) * zoom);
+
+	frustum fr		= make_frustum(w->proj_view);
 	vec4 draw_plane	= { 0, 0, 1, 0 };
 	aabb2 field		= { (vec2)intersect_planes_3(fr.left(), fr.top(), draw_plane), (vec2)intersect_planes_3(fr.right(), fr.bottom(), draw_plane) };
 
-	set_proj_view(proj_view);
-
-	// entities
-
-	for(auto e : w->entities) if (e->_flags & EF_BULLET) e->render(dc);
-	for(auto e : w->entities) if (e->_flags & EF_ENEMY) e->render(dc);
-
-	if (w->player)
-		w->player->render(dc);
+	set_proj_view(w->proj_view);
 
 	// arena
 
@@ -96,12 +93,38 @@ void world_render(world* w, draw_context* dc) {
 	vec2 p1 = { p3.x, p0.y };
 	vec2 p2 = { p0.x, p3.y };
 
-	colour c = colours::AQUA * colour(0.5f, 1.0f);
+	colour c0 = colours::AQUA * colour(0.5f, 1.0f);
+	colour c1 = colours::AQUA * colour(0.1f, 0.0f);
 
-	dc->line(p0, p1, 1.0f, c);
-	dc->line(p1, p3, 1.0f, c);
-	dc->line(p3, p2, 1.0f, c);
-	dc->line(p2, p0, 1.0f, c);
+	int gh = 20;
+	int gw = (int)(gh * (16.0f / 9.0f));
+
+	for(int i = 1; i < gh; i++) {
+		float f = i / (float)gh;
+		dc->line(lerp(p0, p2, f), lerp(p1, p3, f), 0.5f, c1);
+	}
+
+	for(int i = 1; i < gw; i++) {
+		float f = i / (float)gw;
+		dc->line(lerp(p0, p1, f), lerp(p2, p3, f), 0.5f, c1);
+	}
+
+	dc->line(p0, p1, 1.0f, c0);
+	dc->line(p1, p3, 1.0f, c0);
+	dc->line(p3, p2, 1.0f, c0);
+	dc->line(p2, p0, 1.0f, c0);
+
+	// entities
+
+	for(auto e : w->entities) if (e->_flags & EF_BULLET) e->render(dc);
+	for(auto e : w->entities) if (e->_flags & EF_ENEMY) e->render(dc);
+
+	if (w->player)
+		w->player->render(dc);
+	
+	// mouse
+
+	if (gUsingMouse) dc->rect(g_mouse_screen - 2, g_mouse_screen + 2, colour());
 }
 
 // helpers
@@ -137,8 +160,8 @@ bool overlaps_player(entity* e) {
 	return within(p, e, d);
 }
 
-entity* find_enemy_near_line(world* w, vec2 from, vec2 to, float r) {
-	entity* best_e = 0;
+unit* find_enemy_near_line(world* w, vec2 from, vec2 to, float r) {
+	unit* best_u = 0;
 	float best_t = FLT_MAX;
 
 	vec2	d = to - from;
@@ -150,6 +173,9 @@ entity* find_enemy_near_line(world* w, vec2 from, vec2 to, float r) {
 		if (e->_flags & (EF_DESTROYED | EF_SPAWNING))
 			continue;
 
+		if (!(e->_flags & EF_UNIT))
+			continue;
+
 		if (!(e->_flags & EF_ENEMY))
 			continue;
 
@@ -159,13 +185,13 @@ entity* find_enemy_near_line(world* w, vec2 from, vec2 to, float r) {
 
 		if (s < square(e->_radius + r)) {
 			if (t < best_t) {
-				best_e = e;
+				best_u = (unit*)e;
 				best_t = t;
 			}
 		}
 	}
 
-	return best_e;
+	return best_u;
 }
 
 void avoid_crowd(world* w, entity* self) {
