@@ -2,7 +2,9 @@
 #include "Common.h"
 #include "resource.h"
 
-vec2i g_view_size(1280, 720);
+vec2i g_default_view_size(1280, 720);
+
+vec2i g_view_size;
 float g_view_aspect = 1.0f;
 
 HWND gMainWnd;
@@ -11,8 +13,9 @@ extern const wchar_t* gAppName;
 IDirect3D9* gD3d;
 IDirect3DDevice9* gDevice;
 
+bool g_quit;
+
 bool gHasFocus;
-int gKey;
 DWORD gKeyDown[KEY_MAX];
 vec2i gMousePos;
 int gMouseButtons;
@@ -37,13 +40,6 @@ bool gJoyA;
 bool is_key_down(key_press k) { return gKeyDown[k] != 0; }
 
 void GetPresentParams(D3DPRESENT_PARAMETERS* pp) {
-	RECT rc;
-	GetClientRect(gMainWnd, &rc);
-
-	g_view_size.x = max<int>(rc.right - rc.left, 16);
-	g_view_size.y = max<int>(rc.bottom - rc.top, 16);
-	g_view_aspect = (float)g_view_size.x / (float)g_view_size.y;
-
 	pp->Windowed				= TRUE;
 	pp->SwapEffect				= D3DSWAPEFFECT_DISCARD;
 	pp->BackBufferWidth			= g_view_size.x;
@@ -54,6 +50,8 @@ void GetPresentParams(D3DPRESENT_PARAMETERS* pp) {
 }
 
 void ResetDevice() {
+	debug("device reset");
+
 	if (gDevice) {
 		D3DPRESENT_PARAMETERS pp = { };
 		GetPresentParams(&pp);
@@ -73,7 +71,41 @@ vec2 do_stick(int ix, int iy) {
 	return d * (square(j) / i);
 }
 
+bool update_win_size() {
+	RECT rc;
+	GetClientRect(gMainWnd, &rc);
+
+	int w = max<int>(rc.right - rc.left, 16);
+	int h = max<int>(rc.bottom - rc.top, 16);
+
+	if ((w == g_view_size.x) && (h == g_view_size.y))
+		return false;
+
+	g_view_size = vec2i(w, h);
+	g_view_aspect = (float)w / (float)h;
+
+	return true;
+}
+
 void DoFrame() {
+	if (update_win_size()) {
+		RenderShutdown();
+		GpuShutdown();
+
+		update_win_size();
+		ResetDevice();
+
+		GpuInit();
+		RenderInit();
+
+		/*if (gHasFocus) {
+			RECT rc;
+			GetClientRect(gMainWnd, &rc);
+			MapWindowPoints(gMainWnd, 0, (POINT*)&rc, 2);
+			ClipCursor(&rc);
+		}*/
+	}
+
 	static int stick_check_time = 0;
 
 	if (--stick_check_time <= 0) {
@@ -94,6 +126,8 @@ void DoFrame() {
 	}
 
 	if (gDevice) {
+		u64 t_begin = timer_ticks();
+
 		gDevice->BeginScene();
 
 		void RenderPreUpdate();
@@ -108,11 +142,26 @@ void DoFrame() {
 		void frame_render();
 		frame_render();
 
-		gKey = 0;
+		u64 t_mid = timer_ticks();
 
 		gDevice->EndScene();
 		gDevice->Present(0, 0, 0, 0);
+
+		u64 t_end = timer_ticks();
+
+		if (timer_ticks_to_secs(t_end - t_begin) > (1.1f / 60.0f)) {
+			debug("%f : %f", timer_ticks_to_secs(t_end - t_begin) * 1000, timer_ticks_to_secs(t_mid - t_begin) * 1000);
+		}
 	}
+}
+
+DWORD WINAPI GameLoop(void*) {
+	while(!g_quit)
+		DoFrame();
+
+	PostMessage(gMainWnd, WM_QUIT, 0, 0);
+
+	return 0;
 }
 
 int which_key(int c, bool shifted) {
@@ -162,26 +211,7 @@ int which_key(int c, bool shifted) {
 LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 	switch(msg) {
 		case WM_CLOSE:
-			PostQuitMessage(0);
-		return 0;
-
-		case WM_SIZE:
-			RenderShutdown();
-			GpuShutdown();
-
-			ResetDevice();
-
-			GpuInit();
-			RenderInit();
-
-			DoFrame();
-
-			if (gHasFocus) {
-				RECT rc;
-				GetClientRect(hwnd, &rc);
-				MapWindowPoints(hwnd, 0, (POINT*)&rc, 2);
-				ClipCursor(&rc);
-			}
+			g_quit = true;
 		return 0;
 
 		case WM_ACTIVATE:
@@ -189,13 +219,6 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) 
 
 			if (!gHasFocus) {
 				memset(gKeyDown, 0, sizeof(gKeyDown));
-			}
-
-			if (gHasFocus) {
-				RECT rc;
-				GetClientRect(hwnd, &rc);
-				MapWindowPoints(hwnd, 0, (POINT*)&rc, 2);
-				ClipCursor(&rc);
 			}
 		break;
 
@@ -206,7 +229,6 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) 
 
 			if (got_key) {
 				if (!gKeyDown[got_key]) {
-					gKey = got_key;
 					gKeyDown[got_key] = 1;
 				}
 			}
@@ -220,7 +242,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) 
 
 		case WM_SYSKEYDOWN:
 			if ((GetAsyncKeyState(VK_MENU) & 0x8000) && (GetAsyncKeyState(VK_F4) & 0x8000)) {
-				PostQuitMessage(0);
+				g_quit = true;
 			}
 		return 0;
 
@@ -304,13 +326,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	DWORD	style	= WS_OVERLAPPEDWINDOW;
 	DWORD	styleEx = WS_EX_OVERLAPPEDWINDOW;
-	RECT	rcWin	= { 0, 0, g_view_size.x, g_view_size.y };
+	RECT	rcWin	= { 0, 0, g_default_view_size.x, g_default_view_size.y };
 
 	RECT rcDesk;
 	GetClientRect(GetDesktopWindow(), &rcDesk);
 
 	AdjustWindowRectEx(&rcWin, style, FALSE, styleEx);
-	OffsetRect(&rcWin, ((rcDesk.right - rcDesk.left) - g_view_size.x) / 2, ((rcDesk.bottom - rcDesk.top) - g_view_size.y) / 2);
+	OffsetRect(&rcWin, ((rcDesk.right - rcDesk.left) - (rcWin.right - rcWin.left)) / 2, ((rcDesk.bottom - rcDesk.top) - (rcWin.bottom - rcWin.top)) / 2);
 
 	gMainWnd = CreateWindowEx(styleEx, wc.lpszClassName, gAppName, style, rcWin.left, rcWin.top, rcWin.right - rcWin.left, rcWin.bottom - rcWin.top, 0, 0, 0, 0);
 
@@ -322,6 +344,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	D3DPRESENT_PARAMETERS pp = { };
 
+	update_win_size();
 	GetPresentParams(&pp);
 
 	if (FAILED(gD3d->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, gMainWnd, D3DCREATE_HARDWARE_VERTEXPROCESSING, &pp, &gDevice))) {
@@ -330,7 +353,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	GpuInit();
 
-	// Keys
+	// input
 
 	g_LocKeyW = MapVirtualKey(0x11, MAPVK_VSC_TO_VK);
 	g_LocKeyS = MapVirtualKey(0x1F, MAPVK_VSC_TO_VK);
@@ -347,7 +370,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	XInputEnable(TRUE);
 
-	// Main
+	// game/render
 
 	RenderInit();
 
@@ -356,28 +379,31 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	ShowWindow(gMainWnd, SW_SHOWNORMAL);
 
-	// Audio
+	// game thread
+
+	HANDLE hgl = CreateThread(0, 0, GameLoop, 0, 0, 0);
+
+	// audio
 	
 	SoundInit();
 
-	for(;;) {
-		MSG msg;
-		if (PeekMessage(&msg, 0, 0, 0, PM_REMOVE)) {
-			if (msg.message == WM_QUIT)
-				break;
+	// main loop
 
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
-		}
-		else {
-			DoFrame();
-			if (!gHasFocus) Sleep(250);
-		}
+	for(MSG msg; GetMessage(&msg, 0, 0, 0); ) {
+		TranslateMessage(&msg);
+		DispatchMessage(&msg);
 	}
 
+	// make sure gameloop thread has stopped
+
+	g_quit = true;
+	WaitForSingleObject(hgl, INFINITE);
+	CloseHandle(hgl);
+
+	// shutdown
+
 	ShowWindow(gMainWnd, SW_HIDE);
-	ExitProcess(0);
-	
+
 	gDevice->SetVertexDeclaration(0);
 	gDevice->SetVertexShader(0);
 	gDevice->SetPixelShader(0);

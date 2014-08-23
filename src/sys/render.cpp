@@ -58,8 +58,8 @@ void RenderInit() {
 	gReduceDecl		= CreateShader(g_proj_view_vs, sizeof(g_proj_view_vs), g_fs_reduce_ps, sizeof(g_fs_reduce_ps));
 	gTexDecl		= CreateShader(g_proj_view_vs, sizeof(g_proj_view_vs), g_tex_ps, sizeof(g_tex_ps));
 
-	g_dl_world.init(256 * 1024);
-	g_dl_ui.init(256 * 1024);
+	g_dl_world.init(64 * 1024);
+	g_dl_ui.init(64 * 1024);
 
 	gFsQuadVb = CreateVertexBuffer(sizeof(vertex) * 3);
 

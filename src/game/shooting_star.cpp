@@ -12,7 +12,10 @@ void shooting_star::tick() {
 }
 
 void shooting_star::post_tick() {
-	//if (
+	if (overlaps_player(this)) {
+		SoundPlay(sound_id::DIT, 1.0f, 1.0f);
+		destroy();
+	}
 }
 
 void shooting_star::hit_wall(int side) {
@@ -20,7 +23,7 @@ void shooting_star::hit_wall(int side) {
 }
 
 void spawn_shooting_star(world* w, entity* instigator) {
-	if (w->r.chance(4, 5))
+	if (w->r.chance(3, 5))
 		return;
 
 	shooting_star* ent = spawn_entity(w, new shooting_star);

@@ -178,3 +178,21 @@ vec3i random::range(const vec3i& size)					{ return vec3i(range(size.x), range(s
 vec4i random::rand(const vec4i& max)					{ return vec4i(rand(max.x), rand(max.y), rand(max.z), rand(max.w)); }
 vec4i random::range(const vec4i& min, const vec4i& max)	{ return vec4i(range(min.x, max.x), range(min.y, max.y), range(min.z, max.z), range(min.w, max.w)); }
 vec4i random::range(const vec4i& size)					{ return vec4i(range(size.x), range(size.y), range(size.z), range(size.w)); }
+
+// timer
+
+uint64_t timer_ticks() {
+	LARGE_INTEGER ticks;
+	QueryPerformanceCounter(&ticks);
+	return ticks.QuadPart;
+}
+
+uint64_t timer_freq() {
+	LARGE_INTEGER freq;
+	QueryPerformanceFrequency(&freq);
+	return freq.QuadPart;
+}
+
+double timer_ticks_to_secs(uint64_t ticks) {
+	return (double)ticks / (double)timer_freq();
+}

@@ -38,7 +38,7 @@ void player::try_fire(vec2 dir) {
 	if (_reload_time > 0)
 		return;
 
-	_reload_time = 3;
+	_reload_time = 4;
 
 	vec2 p = _pos - _vel * DT;
 

@@ -37,6 +37,8 @@ void entity::update() {
 		b = _world->limit.max - _radius;
 	}
 
+	// todo: should clip by the line rather than clamping back
+
 	if (_pos.x < a.x) { _pos.x = a.x; hit |= (int)side::XN; }
 	if (_pos.x > b.x) { _pos.x = b.x; hit |= (int)side::XP; }
 	if (_pos.y < a.y) { _pos.y = a.y; hit |= (int)side::YN; }
@@ -49,7 +51,9 @@ void entity::update() {
 }
 
 void entity::render(draw_context* dc) {
-	dc->rect(_pos - vec2(_radius), _pos + vec2(_radius), _colour);
+	dc->push_transform(translate(vec3(_pos, 0.0f)));
+	draw(dc);
+	dc->pop_transform();
 }
 
 void entity::tick() {
@@ -59,4 +63,8 @@ void entity::post_tick() {
 }
 
 void entity::hit_wall(int side) {
+}
+
+void entity::draw(draw_context* dc) {
+	dc->rect(-vec2(_radius), vec2(_radius), _colour);
 }

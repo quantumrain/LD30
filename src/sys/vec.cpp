@@ -58,15 +58,15 @@ mat44 look_at(const vec3& eye, const vec3& at, const vec3& up) {
 }
 
 mat44 camera_look_at(const vec3& eye, const vec3& at, const vec3& up) {
-	vec3 z = normalise(eye - at);
+	vec3 z = normalise(at - eye);
 	vec3 x = normalise(cross(up, z));
 	vec3 y = cross(z, x);
 
 	return mat44(
-			vec4(-x.x, y.x, -z.x, 0.0f),
-			vec4(-x.y, y.y, -z.y, 0.0f),
-			vec4(-x.z, y.z, -z.z, 0.0f),
-			vec4(-dot(x, eye), -dot(y, eye), -dot(z, eye), 1.0f)
+			vec4(x.x, y.x, z.x, 0.0f),
+			vec4(x.y, y.y, z.y, 0.0f),
+			vec4(x.z, y.z, z.z, 0.0f),
+			vec4(dot(x, eye), dot(y, eye), dot(z, eye), 1.0f)
 		);
 }
 

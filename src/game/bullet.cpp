@@ -15,6 +15,13 @@ void bullet::tick() {
 }
 
 void bullet::post_tick() {
+	if (_time <= 0)
+		return;
+
+	if (entity* ent = find_enemy_near_line(_world, _old_pos, _pos, _radius)) {
+		destroy();
+		ent->destroy();
+	}
 }
 
 void bullet::hit_wall(int side) {

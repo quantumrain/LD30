@@ -98,7 +98,6 @@ extern int g_LocKeyP;
 extern vec2i g_view_size;
 extern float g_view_aspect;
 
-extern int gKey;
 extern DWORD gKeyDown[KEY_MAX];
 extern vec2i gMousePos;
 extern int gMouseButtons;
@@ -139,5 +138,11 @@ struct file_buf {
 
 bool load_file(file_buf* fb, const char* path);
 texture* load_texture(const char* path);
+
+// timer
+
+uint64_t timer_ticks();
+uint64_t timer_freq();
+double timer_ticks_to_secs(uint64_t ticks);
 
 #endif // COMMON_H

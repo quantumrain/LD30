@@ -36,6 +36,7 @@ struct entity {
 	virtual void tick();
 	virtual void post_tick();
 	virtual void hit_wall(int side);
+	virtual void draw(draw_context* dc);
 
 	world* _world;
 	u32 _flags;
@@ -68,6 +69,14 @@ struct bullet : entity {
 	int _time;
 };
 
+struct tracker : entity {
+	tracker();
+
+	virtual void tick();
+	virtual void post_tick();
+	virtual void hit_wall(int side);
+};
+
 struct shooting_star : entity {
 	shooting_star();
 
@@ -80,22 +89,33 @@ struct shooting_star : entity {
 
 struct world {
 	random r;
-	tile_map tm;
 	aabb2 limit;
 	aabb2 outer_limit;
 	player* player;
 	list<entity> entities;
+
+	int spawn_time;
+	int level_time;
+
+	world();
 };
 
 entity* spawn_entity(world* w, entity* ent);
+template<typename T> T* spawn_entity(world* w, T* ent) { return (T*)spawn_entity(w, (entity*)ent); }
+
 void world_init(world* w);
 void world_update(world* w);
 void world_render(world* w, draw_context* dc);
 
-template<typename T> T* spawn_entity(world* w, T* ent) { return (T*)spawn_entity(w, (entity*)ent); }
+extern world g_world;
+
+// helpers
+
+player* find_nearest_player(world* w, vec2 p);
+bool within(entity* a, entity* b, float d);
+bool overlaps_player(entity* e);
+entity* find_enemy_near_line(world* w, vec2 from, vec2 to, float r);
 
 void spawn_shooting_star(world* w, entity* instigator);
-
-extern world g_world;
 
 #endif // GAME_H

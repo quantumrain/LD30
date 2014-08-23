@@ -117,6 +117,10 @@ void draw_list::render() {
 const float WHITE_UV = 248.0f / 256.0f;
 
 draw_context::draw_context(draw_list* dl) : _dl(dl) {
+	_texture.reserve(16);
+	_colour.reserve(16);
+	_transform.reserve(16);
+
 	_texture.push_back(0);
 	_colour.push_back(colour());
 	_transform.push_back(mat44());
