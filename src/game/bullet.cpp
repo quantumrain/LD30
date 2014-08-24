@@ -42,6 +42,7 @@ void bullet::hit_wall(int clipped) {
 	if (_world->shake < 0.5f) _world->shake += 0.25f;
 
 	SoundPlay(sound_id::BULLET_HIT_WALL, _world->r.range(0.9f, 1.0f), _world->r.range(0.15f, 0.25f));
+	SoundPlay(sound_id::SHOOTING_STAR_HIT, _world->r.range(0.9f, 1.1), _world->r.range(0.3f, 0.6));
 }
 
 void bullet::render(draw_context* dc) {

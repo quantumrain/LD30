@@ -19,7 +19,7 @@ enum class game_state {
 	GAME
 };
 
-const wchar_t* gAppName = L"LD30 - Connected Worlds";
+const wchar_t* gAppName = L"Ludum Dare 30 - Lethal Reflection";
 
 game_state g_game_state;
 world g_world;
@@ -50,6 +50,7 @@ void game_update() {
 					if (gPressedSelect) {
 						reset = true;
 						gPressedSelect = false;
+						SoundPlay(sound_id::DIT, 1.0f, 1.0f);
 					}
 				}
 			}
@@ -81,7 +82,10 @@ void game_render() {
 			menu_render(&dc_ui);
 		break;
 
-		case game_state::GAME:
+		case game_state::GAME: {
+			static int hint_selected = -1;
+			static int hint_last;
+
 			world_render(w, &dc);
 
 			draw_string(&dc_ui, vec2(5.0f, 5.0f), 1.5f, 0, colours::SILVER, "%I64i", g_world.score);
@@ -94,10 +98,27 @@ void game_render() {
 
 				draw_string(&dc_ui, vec2(320.0f, 80.0f), 3.0f, TEXT_CENTRE, colour(colours::SILVER) * f, "GAME OVER");
 
-				const char* str = w->had_hiscore ? "New highscore" : "Score";
+				const char* str = (w->had_hiscore && (w->score != 0)) ? "New highscore" : "Score";
 
 				draw_string(&dc_ui, vec2(320.0f, 110.0f), 2.0f, TEXT_CENTRE, colour(colours::SILVER) * f, "%s: %I64i", str, g_world.score);
+
+				const char* hints[] = {
+					"collect the green orbs to increase your score",
+					"shoot the blue enemies to increase your combo multiplier",
+					"asteroids deflect shooting stars, use this to your advantage!",
+					"be accurate! missing carries a heavy penalty"
+				};
+
+				if (hint_selected == -1) {
+					hint_selected = hint_last;//w->r.rand((int)(sizeof(hints) / sizeof(*hints)));
+					hint_last = (hint_last + 1) % ((int)(sizeof(hints) / sizeof(*hints)));
+				}
+
+				draw_string(&dc_ui, vec2(320.0f, 280.0f), 1.0f, TEXT_CENTRE, colour(colours::GREY) * f, "%s", hints[hint_selected]);
 			}
+			else
+				hint_selected = -1;
+		}
 		break;
 	}
 }
