@@ -4,7 +4,7 @@
 
 extern vec2 g_mouse_screen;
 
-player::player() : unit(ET_PLAYER), _reload_time(), _health_recharge(), _shield_time(), _recharge_pulse() {
+player::player() : unit(ET_PLAYER), _reload_time(), _health_recharge(), _shield_time(), _recharge_pulse(), _rot_v() {
 	_flags |= EF_PLAYER;
 	_colour = colours::ORANGE * 1.5f;
 	_radius = 6.0f;
@@ -24,6 +24,15 @@ void player::tick() {
 
 	_vel *= 0.8f;
 	_vel += acc * 55.0f;
+
+	if (length_sq(_vel) > 0.1f) {
+		_rot_v += dot(perp(normalise(_vel)), acc) * 4.0f;
+	}
+
+	_rot_v += -_rot;
+	_rot_v *= 0.9f;
+
+	_rot = normalise_radians(_rot + (_rot_v * DT));
 
 	if (_health < 3) {
 		if (++_health_recharge >= (5 * 60)) {

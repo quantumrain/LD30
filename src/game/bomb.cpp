@@ -3,7 +3,7 @@
 #include "Game.h"
 
 bomb::bomb() : entity(ET_BOMB) {
-	_flags |= EF_BOMB;
+	_flags |= EF_BOMB | EF_USE_OUTER_LIMIT;
 	_colour = colour(colours::ORANGE, 0.0f);
 	_radius = 4.0f;
 	_time = 13;
@@ -29,8 +29,10 @@ void bomb::post_tick() {
 		if (!(e->_flags & EF_ENEMY))
 			continue;
 
-		if (length_sq(_pos - e->_pos) < square(_radius + e->_radius))
+		if (length_sq(_pos - e->_pos) < square(_radius + e->_radius)) {
+			fx_explosion(e->_pos, 0.5f, 5, e->_colour);
 			e->destroy();
+		}
 	}
 }
 
@@ -46,11 +48,12 @@ void bomb::draw(draw_context* dc) {
 	}
 
 	float r = _radius * 0.75f;
+	colour c = colour(0.1f, 0.0f, 0.0f, 0.5f);
 
 	for(int i = 0; i < 8; i++) {
 		float f = (i / 8.0f) * PI;
 		dc->push_transform(rotate_z(f));
-		dc->rect(-vec2(r), vec2(r), colour(0.0f, 1.0f));
+		dc->rect(-vec2(r), vec2(r), c);
 		dc->pop_transform();
 	}
 }

@@ -162,6 +162,9 @@ void world_render(world* w, draw_context* dc) {
 	// entities
 
 	for(auto e : w->entities) if (e->_flags & EF_BOMB) e->render(dc);
+
+	psys_render(dc);
+
 	for(auto e : w->entities) if (e->_flags & EF_PICKUP) e->render(dc);
 	for(auto e : w->entities) if (e->_flags & EF_BULLET) e->render(dc);
 	for(auto e : w->entities) if (e->_flags & EF_ENEMY) e->render(dc);
@@ -310,6 +313,18 @@ void avoid_crowd(world* w, entity* self, bool asteroids_too) {
 
 		self->_vel += d * force_self;
 		e->_vel -= d * force_e;
+
+		if (!asteroids_too) {
+			if ((self->_type == ET_ASTEROID) && (e->_type == ET_ASTEROID)) {
+				asteroid* aa = (asteroid*)self;
+				asteroid* bb = (asteroid*)e;
+
+				vec2 n = normalise(d);
+
+				aa->_rot_v += dot(n, aa->_vel) * DT;
+				bb->_rot_v += dot(-n, bb->_vel) * DT;
+			}
+		}
 	}
 }
 

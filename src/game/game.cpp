@@ -25,6 +25,7 @@ game_state g_game_state;
 world g_world;
 
 void game_init() {
+	psys_init(1024 * 32);
 }
 
 void game_update() {
@@ -58,6 +59,8 @@ void game_update() {
 		}
 		break;
 	}
+
+	psys_update();
 }
 
 void game_render() {

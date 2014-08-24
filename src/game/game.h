@@ -103,6 +103,7 @@ struct player : unit {
 	int _health_recharge;
 	int _shield_time;
 	int _recharge_pulse;
+	float _rot_v;
 };
 
 struct bullet : entity {
@@ -163,14 +164,21 @@ struct shooting_star : unit {
 	virtual void damage(damage_desc* dd);
 };
 
+#define NUM_AST_PROFILE 12
+
 struct asteroid : unit {
 	asteroid();
 
+	virtual void init();
 	virtual void tick();
 	virtual void post_tick();
 	virtual void hit_wall(int clipped);
+	virtual void draw(draw_context* dc);
 
 	virtual void damage(damage_desc* dd);
+
+	float _profile[NUM_AST_PROFILE];
+	float _rot_v;
 };
 
 struct mini_asteroid : unit {
@@ -237,5 +245,16 @@ void spawn_bomb(world* w, vec2 pos);
 
 bool menu_update();
 void menu_render(draw_context* dc);
+
+// particles
+
+void psys_init(int max_particles);
+void psys_update();
+void psys_render(draw_context* dc);
+void psys_spawn(vec2 pos, vec2 vel, float damp, float size0, float size1, float rot_v, colour c, int lifetime);
+
+// effects
+
+void fx_explosion(vec2 pos, float strength, int count, colour c);
 
 #endif // GAME_H

@@ -2,24 +2,61 @@
 #include "Common.h"
 #include "Game.h"
 
-asteroid::asteroid() : unit(ET_ASTEROID) {
+extern random g_rand;
+
+asteroid::asteroid() : unit(ET_ASTEROID), _rot_v() {
 	_flags |= EF_USE_OUTER_LIMIT | EF_ENEMY;
 	_colour = colours::RED;
-	_radius = 12.0f;
+	_radius = 16.0f;
 
 	instant_spawn();
 }
 
+void asteroid::init() {
+	for(int i = 0; i < NUM_AST_PROFILE; i++) {
+		float r = _world->r.range(0.95f, 1.3f);
+
+		if (_world->r.chance(1, 5))
+			r *= 0.85f;
+
+		_profile[i] = r;
+	}
+
+	_rot_v = _world->r.range(6.0f);
+}
+
 void asteroid::tick() {
+	_rot += _rot_v * DT;
 	avoid_crowd(_world, this, false);
 }
 
 void asteroid::post_tick() {
 	unit::post_tick();
+
+	for(int i = 0; i < 2; i++) {
+		vec2 p = _pos + rotation(g_rand.range(PI)) * square(g_rand.rand(1.0f)) * _radius * 1.25f;
+
+		psys_spawn(p, 0.0f, 0.9f, 2.0f, 2.0f,  g_rand.range(1.0f), _colour * 0.5f, g_rand.range(24, 40));
+	}
 }
 
 void asteroid::hit_wall(int clipped) {
 	destroy();
+}
+
+void asteroid::draw(draw_context* dc) {
+	vec2 p[NUM_AST_PROFILE];
+
+	for(int i = 0; i < NUM_AST_PROFILE; i++) {
+		float f = (i / (float)NUM_AST_PROFILE) * PI_2;
+
+		p[i] = rotation(f) * _profile[i];
+	}
+
+	float thi = 1.5f;
+
+	for(int i = 0, j = NUM_AST_PROFILE - 1; i < NUM_AST_PROFILE; j = i, i++) dc->tri(vec2(), p[i] * _radius, p[j] * _radius, _colour);
+	for(int i = 0, j = NUM_AST_PROFILE - 1; i < NUM_AST_PROFILE; j = i, i++) dc->tri(vec2(), p[i] * (_radius - thi), p[j] * (_radius - thi), colour(0.0f, 1.0f));
 }
 
 void asteroid::damage(damage_desc* dd) {

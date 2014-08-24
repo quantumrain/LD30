@@ -17,12 +17,16 @@ void shooting_star::post_tick() {
 	unit::post_tick();
 
 	if (unit* u = find_overlapping_unit(_world, _pos, ET_ASTEROID, _radius)) {
+		fx_explosion(_pos, 0.5f, 5, _colour);
+
 		u->damage(&damage_desc(damage_type::PUSH, 0, this));
 		spawn_pickup(_world, _pos);
 		destroy();
 	}
 
 	if (unit* u = find_overlapping_unit(_world, _pos, ET_TRACKER, _radius)) {
+		fx_explosion(_pos, 0.5f, 5, _colour);
+
 		u->damage(&damage_desc(damage_type::PUSH, 0, this));
 		spawn_pickup(_world, _pos);
 		destroy();

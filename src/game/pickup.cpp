@@ -16,9 +16,7 @@ void pickup::init() {
 void pickup::tick() {
 	if (--_time <= 0)
 		destroy();
-}
 
-void pickup::post_tick() {
 	if (player* p = find_nearest_player(_world, _pos)) {
 		vec2 d = p->_pos - _pos;
 		float l = length_sq(d);
@@ -39,6 +37,31 @@ void pickup::post_tick() {
 
 	if (length_sq(_vel) > 30.0f)
 		_vel *= 0.9f;
+
+	// avoid asteroids
+
+	for(auto e : _world->entities) {
+		if (e->_flags & EF_DESTROYED)
+			continue;
+
+		if (e->_type != ET_ASTEROID)
+			continue;
+
+		vec2	d		= _pos - e->_pos;
+		float	min_l	= _radius + e->_radius;
+
+		if (length_sq(d) > square(min_l))
+			continue;
+
+		float l = length(d);
+
+		if (l > 0.1f) {
+			_vel += d * (8.0f / l);
+		}
+	}
+}
+
+void pickup::post_tick() {
 }
 
 void pickup::hit_wall(int clipped) {

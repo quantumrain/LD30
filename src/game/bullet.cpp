@@ -16,6 +16,8 @@ void bullet::tick() {
 
 void bullet::post_tick() {
 	if (unit* u = find_enemy_near_line(_world, _old_pos, _pos, _radius)) {
+		fx_explosion(_pos, 0.3f, 1, _colour);
+
 		u->damage(&damage_desc(damage_type::BULLET, 1, this));
 		destroy();
 	}
@@ -26,6 +28,8 @@ void bullet::post_tick() {
 void bullet::hit_wall(int clipped) {
 	_time = 0;
 	spawn_shooting_star(_world, this);
+
+	fx_explosion(_pos, 0.3f, 1, _colour);
 }
 
 void bullet::render(draw_context* dc) {
