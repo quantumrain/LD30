@@ -147,7 +147,7 @@ void SoundInit() {
 	load_riff(gXAudio, &gSound[(int)sound_id::SHOOTING_STAR_SPAWN_END],"data\\shooting_star_spawn_end.wav", 8);
 	load_riff(gXAudio, &gSound[(int)sound_id::HISCORE_BEAT],	"data\\hiscore_beat.wav", 8);
 
-	gSound[(int)sound_id::PICKUP_COLLECT].max_cooldown_frames = 0;
+	gSound[(int)sound_id::PICKUP_COLLECT].max_cooldown_frames = 2;
 	gSound[(int)sound_id::BULLET_DEFLECT].max_cooldown_frames = 5;
 	gSound[(int)sound_id::SHOOTING_STAR_HIT].max_cooldown_frames = 5;
 	gSound[(int)sound_id::ASTEROID_BOUNCE].max_cooldown_frames = 15;
