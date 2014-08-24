@@ -88,6 +88,9 @@ void entity::render(draw_context* dc) {
 	dc->pop_transform();
 }
 
+void entity::init() {
+}
+
 void entity::tick() {
 }
 

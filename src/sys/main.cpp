@@ -32,14 +32,6 @@ int g_LocKeyS;
 int g_LocKeyA;
 int g_LocKeyD;
 
-int g_LocKeyZ;
-int g_LocKeyX;
-int g_LocKeyC;
-
-int g_LocKeyI;
-int g_LocKeyO;
-int g_LocKeyP;
-
 vec2 gJoyLeft;
 vec2 gJoyRight;
 bool gJoyA;
@@ -53,7 +45,7 @@ void GetPresentParams(D3DPRESENT_PARAMETERS* pp) {
 	pp->BackBufferHeight		= g_view_size.y;
 	pp->BackBufferFormat		= D3DFMT_A8R8G8B8;
 	pp->hDeviceWindow			= gMainWnd;
-	pp->PresentationInterval	= D3DPRESENT_INTERVAL_DEFAULT;
+	pp->PresentationInterval	= D3DPRESENT_INTERVAL_ONE;
 }
 
 void ResetDevice() {
@@ -203,35 +195,14 @@ int which_key(int c, bool shifted) {
 		case VK_LEFT:	return KEY_R_LEFT;
 		case VK_RIGHT:	return KEY_R_RIGHT;
 		case VK_RETURN:	return KEY_FIRE;
-		case VK_SPACE:	return KEY_ALT_FIRE;
-		//case 'R':		return KEY_RESET;
-		case VK_F1:		return KEY_MODE;
-		case VK_F2:		return shifted ? KEY_CHEAT : KEY_NONE;
-		case '0':		return KEY_0;
-		case '1':		return KEY_1;
-		case '2':		return KEY_2;
-		case '3':		return KEY_3;
-		case '4':		return KEY_4;
-		case '5':		return KEY_5;
-		case '6':		return KEY_6;
-		case '7':		return KEY_7;
-		case '8':		return KEY_8;
-		case '9':		return KEY_9;
-		case 27:		return KEY_RESET;
+		case VK_SPACE:	return KEY_FIRE;
+		case 27:		return KEY_ESCAPE;
 	}
 
 	if (c == g_LocKeyW) return KEY_L_UP;
 	if (c == g_LocKeyS) return KEY_L_DOWN;
 	if (c == g_LocKeyA) return KEY_L_LEFT;
 	if (c == g_LocKeyD) return KEY_L_RIGHT;
-
-	if (c == g_LocKeyZ) return KEY_ALT_FIRE;
-	if (c == g_LocKeyX) return KEY_FIRE;
-	if (c == g_LocKeyC) return KEY_PLACE;
-
-	if (c == g_LocKeyI) return KEY_ALT_FIRE;
-	if (c == g_LocKeyO) return KEY_FIRE;
-	if (c == g_LocKeyP) return KEY_PLACE;
 
 	return KEY_NONE;
 }
@@ -402,14 +373,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	g_LocKeyS = MapVirtualKey(0x1F, MAPVK_VSC_TO_VK);
 	g_LocKeyA = MapVirtualKey(0x1E, MAPVK_VSC_TO_VK);
 	g_LocKeyD = MapVirtualKey(0x20, MAPVK_VSC_TO_VK);
-
-	g_LocKeyZ = MapVirtualKey(44, MAPVK_VSC_TO_VK);
-	g_LocKeyX = MapVirtualKey(45, MAPVK_VSC_TO_VK);
-	g_LocKeyC = MapVirtualKey(46, MAPVK_VSC_TO_VK);
-
-	g_LocKeyI = MapVirtualKey(23, MAPVK_VSC_TO_VK);
-	g_LocKeyO = MapVirtualKey(24, MAPVK_VSC_TO_VK);
-	g_LocKeyP = MapVirtualKey(25, MAPVK_VSC_TO_VK);
 
 	XInputEnable(TRUE);
 

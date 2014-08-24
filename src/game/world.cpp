@@ -18,14 +18,28 @@ template<typename C> void prune(C& c) {
 
 // world
 
-world::world() : player(), spawn_time(), level_time() {
+world::world() : player(), spawn_time(), level_time(), kills(), score(), multi() {
 }
 
 void world_init(world* w) {
-	w->limit		= { { -320.0f, -180.0f }, { 320.0f, 180.0f } };
-	w->outer_limit	= inflate(w->limit, 80.0f);
+	w->r = random(GetTickCount());
 
-	w->player = spawn_entity(w, new player);
+	w->limit		= { { -320.0f, -180.0f }, { 320.0f, 180.0f } };
+	w->outer_limit	= { w->limit.min * 1.5f, w->limit.max * 1.5f };
+
+	spawn_entity(w, new player);
+
+	w->spawn_time	= 0;
+	w->level_time	= 0;
+	w->kills		= 0;
+
+	w->score		= 0;
+	w->multi		= 1;
+}
+
+void world_clear(world* w) {
+	w->entities.free();
+	w->player = 0;
 }
 
 void world_update(world* w) {
@@ -39,22 +53,40 @@ void world_update(world* w) {
 
 	// spawn
 
-	w->level_time++;
+	if (w->player) {
+		int num_trackers = 0;
 
-	int t = max(60 - (int)sqrt(w->level_time / 2), 0);
+		for_all(w->entities, [&](entity* e) { if (e->_type == ET_TRACKER) num_trackers++; });
 
-	if (++w->spawn_time > t) {
-		tracker* t = spawn_entity(w, new tracker);
+		w->level_time++;
 
-		vec2 p = w->r.range(w->limit.min + t->_radius, w->limit.max - t->_radius);
+		float	f = 50.0f / (50.0f + w->kills);
+		int		t = (int)(90 * f);
 
-		t->_pos = p;
-		t->_old_pos = p;
+		if (++w->spawn_time > t) {
+			tracker* t = spawn_entity(w, new tracker);
 
-		w->spawn_time = 0;
+			vec2 p = w->r.range(w->limit.min + t->_radius, w->limit.max - t->_radius);
+
+			t->_pos = p;
+			t->_old_pos = p;
+
+			w->spawn_time = 0;
+		}
+
+		if ((w->level_time % 120) == 0) {
+			int num_spawns = 1 + (num_trackers / 2);
+
+			for(int i = 0; i < num_spawns; i++) spawn_asteroid(w);
+		}
 	}
 
 	// prune
+
+	if (w->player) {
+		if (w->player->_flags & EF_DESTROYED)
+			w->player = 0;
+	}
 
 	prune(w->entities);
 }
@@ -116,6 +148,7 @@ void world_render(world* w, draw_context* dc) {
 
 	// entities
 
+	for(auto e : w->entities) if (e->_flags & EF_PICKUP) e->render(dc);
 	for(auto e : w->entities) if (e->_flags & EF_BULLET) e->render(dc);
 	for(auto e : w->entities) if (e->_flags & EF_ENEMY) e->render(dc);
 
@@ -132,7 +165,14 @@ void world_render(world* w, draw_context* dc) {
 entity* spawn_entity(world* w, entity* ent) {
 	if (ent) {
 		ent->_world = w;
+
 		w->entities.push_back(ent);
+
+		if (ent->_type == ET_PLAYER) {
+			w->player = (player*)ent;
+		}
+
+		ent->init();
 	}
 
 	return ent;
@@ -146,18 +186,21 @@ bool within(entity* a, entity* b, float d) {
 	return a && b && (length_sq(a->_pos - b->_pos) < square(d));
 }
 
-bool overlaps_player(entity* e) {
+player* overlaps_player(entity* e) {
 	if (!e)
-		return false;
+		return 0;
 
-	entity* p = find_nearest_player(e->_world, e->_pos);
+	player* p = find_nearest_player(e->_world, e->_pos);
 
 	if (!p)
-		return false;
+		return 0;
 
 	float d = e->_radius + p->_radius * 0.5f;
 
-	return within(p, e, d);
+	if (within(p, e, d))
+		return p;
+
+	return 0;
 }
 
 unit* find_enemy_near_line(world* w, vec2 from, vec2 to, float r) {
@@ -194,7 +237,7 @@ unit* find_enemy_near_line(world* w, vec2 from, vec2 to, float r) {
 	return best_u;
 }
 
-void avoid_crowd(world* w, entity* self) {
+void avoid_crowd(world* w, entity* self, bool asteroids_too) {
 	for(auto e : w->entities) {
 		if (e == self)
 			continue;
@@ -202,8 +245,10 @@ void avoid_crowd(world* w, entity* self) {
 		if (e->_flags & EF_DESTROYED)
 			continue;
 
-		if (e->_type != self->_type)
-			continue;
+		if (e->_type != self->_type) {
+			if (!asteroids_too || (e->_type != ET_ASTEROID))
+				continue;
+		}
 
 		vec2	d		= self->_pos - e->_pos;
 		float	min_l	= self->_radius + e->_radius;
@@ -218,9 +263,44 @@ void avoid_crowd(world* w, entity* self) {
 		else
 			d /= l;
 
-		d *= 8.0f;
+		float force_self	= 8.0f;
+		float force_e		= 8.0f;
 
-		self->_vel += d;
-		e->_vel -= d;
+		if (asteroids_too && (e->_type == ET_ASTEROID)) {
+			force_self	= 64.0f;
+			force_e		= 1.0f;
+		}
+
+		self->_vel += d * force_self;
+		e->_vel -= d * force_e;
 	}
+}
+
+unit* find_overlapping_unit(world* w, vec2 pos, entity_type type, float r) {
+	unit* best_u = 0;
+	float best_d = FLT_MAX;
+
+	for(auto e : w->entities) {
+		if (e->_flags & (EF_DESTROYED | EF_SPAWNING))
+			continue;
+
+		if (!(e->_flags & EF_UNIT))
+			continue;
+
+		if (e->_type != type)
+			continue;
+
+		float d = length_sq(e->_pos - pos);
+
+		if (d < square(e->_radius + r)) {
+			d = sqrtf(d) - e->_radius;
+
+			if (d < best_d) {
+				best_u = (unit*)e;
+				best_d = d;
+			}
+		}
+	}
+
+	return best_u;
 }

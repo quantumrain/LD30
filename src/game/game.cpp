@@ -18,16 +18,48 @@
 
 */
 
+enum class game_state {
+	MENU,
+	GAME
+};
+
 const wchar_t* gAppName = L"LD30 - Connected Worlds";
 
+game_state g_game_state;
 world g_world;
 
 void game_init() {
-	world_init(&g_world);
 }
 
 void game_update() {
-	world_update(&g_world);
+	world* w = &g_world;
+
+	switch(g_game_state) {
+		case game_state::MENU:
+			if (menu_update()) {
+				world_init(w);
+				g_game_state = game_state::GAME;
+			}
+		break;
+
+		case game_state::GAME: {
+			bool reset = is_key_down(KEY_ESCAPE);
+
+			if (g_world.player == 0) {
+				if (is_key_down(KEY_FIRE) || (gMouseButtons & 1) || gJoyA)
+					reset = true;
+			}
+
+			if (reset) {
+				world_clear(w);
+				g_game_state = game_state::MENU;
+			}
+			else {
+				world_update(w);
+			}
+		}
+		break;
+	}
 }
 
 void game_render() {
@@ -36,5 +68,16 @@ void game_render() {
 
 	dc.set_texture(g_sheet);
 
-	world_render(&g_world, &dc);
+	switch(g_game_state) {
+		case game_state::MENU:
+			menu_render(&dc_ui);
+		break;
+
+		case game_state::GAME:
+			world_render(&g_world, &dc);
+
+			draw_string(&dc_ui, vec2(5.0f, 5.0f), 1.5f, 0, colours::SILVER, "%I64i", g_world.score);
+			draw_string(&dc_ui, vec2(5.0f, 17.5f), 0.75f, 0, colours::SILVER, "x%I64i", g_world.multi);
+		break;
+	}
 }

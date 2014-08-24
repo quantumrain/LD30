@@ -12,14 +12,18 @@ void unit::instant_spawn() {
 
 void unit::post_tick() {
 	if (_flags & EF_ENEMY) {
-		if (overlaps_player(this)) {
-			damage();
+		if (player* p = overlaps_player(this)) {
+			p->damage(&damage_desc(damage_type::COLLISION, 1, this));
+			damage(&damage_desc(damage_type::COLLISION, 1, p));
 		}
 	}
 }
 
-void unit::damage() {
-	if (--_health <= 0)
+void unit::damage(damage_desc* dd) {
+	if (_flags & EF_DESTROYED)
+		return;
+
+	if ((_health -= dd->value) <= 0)
 		killed();
 	else
 		flinch();
@@ -29,6 +33,14 @@ void unit::flinch() {
 }
 
 void unit::killed() {
-	SoundPlay(sound_id::DIT, 1.0f, 1.0f);
+	if (_flags & EF_ENEMY) {
+		_world->kills++;
+		_world->score += 5 * _world->multi;
+	}
+
+	spawn_pickup(_world, _pos);
+
+	//SoundPlay(sound_id::DIT, 1.0f, 1.0f);
+
 	destroy();
 }

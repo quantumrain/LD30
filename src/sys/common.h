@@ -68,21 +68,7 @@ enum key_press {
 	KEY_R_LEFT,
 	KEY_R_RIGHT,
 	KEY_FIRE,
-	KEY_ALT_FIRE,
-	KEY_1,
-	KEY_2,
-	KEY_3,
-	KEY_4,
-	KEY_5,
-	KEY_6,
-	KEY_7,
-	KEY_8,
-	KEY_9,
-	KEY_0,
-	KEY_RESET,
-	KEY_CHEAT,
-	KEY_MODE,
-	KEY_PLACE,
+	KEY_ESCAPE,
 	KEY_MAX
 };
 
@@ -90,14 +76,6 @@ extern int g_LocKeyW;
 extern int g_LocKeyS;
 extern int g_LocKeyA;
 extern int g_LocKeyD;
-
-extern int g_LocKeyZ;
-extern int g_LocKeyX;
-extern int g_LocKeyC;
-
-extern int g_LocKeyI;
-extern int g_LocKeyO;
-extern int g_LocKeyP;
 
 extern vec2i g_view_size;
 extern float g_view_aspect;
