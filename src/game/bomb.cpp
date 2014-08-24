@@ -14,6 +14,8 @@ void bomb::tick() {
 
 	_radius = lerp(4.0f, 70.0f, f);
 
+	_world->shake += lerp(2.0f, 16.0f, f);
+
 	if (--_time <= 0)
 		destroy();
 }

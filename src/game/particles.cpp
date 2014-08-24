@@ -71,7 +71,7 @@ void psys_spawn(vec2 pos, vec2 vel, float damp, float size0, float size1, float 
 	p->size0 = size0;
 	p->size1 = size1;
 	p->rot = g_rand.range(PI);
-	p->rot = rot_v;
+	p->rot_v = rot_v;
 	p->c = c;
 	p->time = 0;
 	p->lifetime = lifetime;

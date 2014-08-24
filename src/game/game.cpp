@@ -38,6 +38,7 @@ void game_update() {
 			if (menu_update()) {
 				world_init(w);
 				g_game_state = game_state::GAME;
+				SoundPlay(sound_id::DIT, 1.0f, 1.0f);
 			}
 		break;
 

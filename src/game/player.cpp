@@ -4,11 +4,16 @@
 
 extern vec2 g_mouse_screen;
 
-player::player() : unit(ET_PLAYER), _reload_time(), _health_recharge(), _shield_time(), _recharge_pulse(), _rot_v() {
+player::player() : unit(ET_PLAYER), _reload_time(), _health_recharge(), _shield_time(), _recharge_pulse(), _rot_v(), _tada() {
 	_flags |= EF_PLAYER;
 	_colour = colours::GREEN * 1.5f;
 	_radius = 6.0f;
 	_health = 3;
+	_shield_time = 40;
+}
+
+void player::init() {
+	SoundPlay(sound_id::PLAYER_SPAWN, 1.0f, 1.0f);
 }
 
 void player::tick() {
@@ -40,15 +45,23 @@ void player::tick() {
 			_recharge_pulse = 10;
 			_health = clamp(_health + 1, 0, 3);
 
-			//SoundPlay(sound_id::DIT, 3.0f, 1.0f);
+			SoundPlay(sound_id::PLAYER_RECHARGE, 1.0f, 1.0f);
 		}
 	}
 
-	if (_shield_time > 0)
-		_shield_time--;
+	if (_shield_time > 0) {
+		if (--_shield_time <= 0) {
+			SoundPlay(sound_id::PLAYER_SHIELD_END, 1.0f, 0.75f);
+		}
+	}
 
 	if (_recharge_pulse > 0)
 		_recharge_pulse--;
+
+	if (!_tada) {
+		//SoundPlay(sound_id::PLAYER_SPAWN_END, 1.0f, 1.0f);
+		_tada = true;
+	}
 }
 
 void player::post_tick() {
@@ -84,7 +97,7 @@ void player::draw(draw_context* dc) {
 	c *= colour(1.5f, 1.0f);
 
 	if (_shield_time > 0) {
-		dc->rect(-vec2(r * 1.5f), vec2(r * 1.5f), c);
+		dc->rect(-vec2(r * 1.5f), vec2(r * 1.5f), c * 2.5f);
 		dc->rect(-vec2(r * 1.25f), vec2(r * 1.25f), colour(0.0f, 1.0f));
 	}
 
@@ -112,10 +125,10 @@ void player::damage(damage_desc* dd) {
 
 void player::flinch(damage_desc* dd) {
 	_health_recharge = 0;
-	_shield_time = 30;
+	_shield_time = 60;
 	_recharge_pulse = 10;
 
-	//SoundPlay(sound_id::DIT, 1.0f, 1.0f);
+	SoundPlay(sound_id::PLAYER_HIT, 1.0f, 1.0f);
 
 	spawn_bomb(_world, _pos);
 }
@@ -123,7 +136,10 @@ void player::flinch(damage_desc* dd) {
 void player::killed(damage_desc* dd) {
 	fx_explosion(_pos, 3.0f, 100, colours::ORANGE * 1.5f, 1.0f);
 
-	//SoundPlay(sound_id::DIT, 0.1f, 1.0f);
+	SoundPlay(sound_id::PLAYER_DIE, 1.0f, 1.0f);
+
+	_world->shake += 50.0f;
+
 	destroy();
 }
 
@@ -131,9 +147,11 @@ void player::try_fire(vec2 dir) {
 	if (_reload_time > 0)
 		return;
 
+	SoundPlay(sound_id::PLAYER_FIRE, _world->r.range(1.0f, 1.0f), lerp(0.1f, 0.25f, square(_world->r.rand(1.0f))));
+
 	_reload_time = 4;
 
-	vec2 p = _pos - _vel * DT;
+	vec2 p = _pos;// - _vel * DT;
 	vec2 base_v = _vel;
 
 	if (gMouseButtons & 1) base_v -= perp(dir) * dot(base_v, perp(dir)) * 0.75f; // todo: update if cam tracking changes
@@ -149,5 +167,10 @@ void player::try_fire(vec2 dir) {
 		b->_pos		= p;
 		b->_old_pos	= p;
 		b->_vel		= base_v + d;
+		b->_rot		= rotation_of(d);
+	}
+
+	for(int i = 0; i < 8; i++) {
+		psys_spawn(_pos + dir * _radius * 1.85f, vec2(), 0.0f, 7.5f, 7.5f, 0.0f, colour(0.75f, 0.0f), 2);
 	}
 }

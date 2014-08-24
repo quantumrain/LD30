@@ -102,12 +102,28 @@ void panic(const char* txt, ...);
 
 enum class sound_id {
 	DIT,
+	PICKUP_COLLECT,
+	PLAYER_FIRE,
+	UNIT_EXPLODE,
+	BULLET_HIT_WALL,
+	BULLET_DEFLECT,
+	PLAYER_HIT,
+	PLAYER_DIE,
+	PLAYER_RECHARGE,
+	TRACKER_SPAWN,
+	SHOOTING_STAR_HIT,
+	PLAYER_SPAWN,
+	PLAYER_SPAWN_END,
+	PLAYER_SHIELD_END,
+	ASTEROID_BOUNCE,
+	TRACKER_BOUNCE,
 	MAX
 };
 
 void SoundInit();
+void SoundUpdate();
 void SoundShutdown();
-void SoundPlay(sound_id sid, float freq, float volume);
+bool SoundPlay(sound_id sid, float freq, float volume);
 
 // File
 

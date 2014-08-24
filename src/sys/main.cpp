@@ -126,6 +126,10 @@ void DoFrame() {
 			gJoyRight			= do_stick(state.Gamepad.sThumbRX, state.Gamepad.sThumbRY);
 			gJoyA				= (state.Gamepad.wButtons & XINPUT_GAMEPAD_A) != 0;
 			stick_check_time	= 0;
+
+#ifdef _DEBUG
+			if (state.Gamepad.bRightTrigger > 30) Sleep(100);
+#endif
 		}
 		else {
 			gJoyLeft			= vec2();
@@ -148,6 +152,8 @@ void DoFrame() {
 		gOldMousePos = gMousePos;
 		gMouseTime = 0;
 	}
+
+	SoundUpdate();
 
 	if (gDevice) {
 		static u64 t_begin = timer_ticks();

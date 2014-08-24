@@ -18,15 +18,19 @@ void bullet::post_tick() {
 	if (unit* u = find_enemy_near_line(_world, _old_pos, _pos, _radius)) {
 		u->damage(&damage_desc(damage_type::BULLET, 1, this));
 
-		if (u->_flags & EF_DESTROYED)
+		if (u->_flags & EF_DESTROYED) {
 			fx_explosion(_pos, 0.3f, 1, _colour, 0.75f);
-		else
+		}
+		else {
 			fx_explosion(_pos, 0.15f, 1, _colour, 0.6f);
+			SoundPlay(sound_id::BULLET_DEFLECT, _world->r.range(0.9f, 1.0f), _world->r.range(0.25f, 0.45f));
+			SoundPlay(sound_id::SHOOTING_STAR_HIT, _world->r.range(0.9f, 1.1), _world->r.range(0.6f, 0.8));
+
+			if (_world->shake < 1.0f) _world->shake += 0.5f;
+		}
 
 		destroy();
 	}
-
-	_rot = rotation_of(_vel);
 }
 
 void bullet::hit_wall(int clipped) {
@@ -34,6 +38,8 @@ void bullet::hit_wall(int clipped) {
 	spawn_shooting_star(_world, this);
 
 	fx_explosion(_pos, 0.3f, 1, _colour, 0.5f);
+
+	SoundPlay(sound_id::BULLET_HIT_WALL, _world->r.range(0.9f, 1.0f), _world->r.range(0.15f, 0.25f));
 }
 
 void bullet::render(draw_context* dc) {

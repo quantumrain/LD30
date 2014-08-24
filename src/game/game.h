@@ -89,6 +89,7 @@ struct unit : entity {
 struct player : unit {
 	player();
 
+	virtual void init();
 	virtual void tick();
 	virtual void post_tick();
 	virtual void draw(draw_context* dc);
@@ -104,6 +105,7 @@ struct player : unit {
 	int _shield_time;
 	int _recharge_pulse;
 	float _rot_v;
+	bool _tada;
 };
 
 struct bullet : entity {
@@ -143,6 +145,7 @@ struct pickup : entity {
 struct tracker : unit {
 	tracker();
 
+	virtual void init();
 	virtual void tick();
 	virtual void post_tick();
 	virtual void hit_wall(int clipped);
@@ -166,6 +169,7 @@ struct shooting_star : unit {
 	virtual void damage(damage_desc* dd);
 
 	int _flash;
+	vec2 _desired_vel;
 };
 
 #define NUM_AST_PROFILE 12
@@ -183,6 +187,7 @@ struct asteroid : unit {
 
 	float _profile[NUM_AST_PROFILE];
 	float _rot_v;
+	int _flash;
 };
 
 struct mini_asteroid : unit {
@@ -206,7 +211,9 @@ struct world {
 	list<entity> entities;
 
 	mat44 proj_view;
+	vec2 camera_lerp;
 	vec2 camera_target;
+	float shake;
 
 	int spawn_time;
 	int level_time;

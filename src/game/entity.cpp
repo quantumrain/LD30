@@ -76,7 +76,7 @@ void entity::render(draw_context* dc) {
 			float c = clamp(min(3.0f - s, s), 0.0f, 1.0f);
 
 			dc->push_transform(scale(s));
-			dc->push_colour(colour(c * 0.5f, 0.0f));
+			dc->push_colour(colour(c * 0.75f, c * 0.5f));
 			draw(dc);
 			dc->pop_colour();
 			dc->pop_transform();

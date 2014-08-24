@@ -15,6 +15,10 @@ struct SoundVariant {
 
 struct Sound {
 	list<SoundVariant> variants;
+	int cooldown_frames;
+	int max_cooldown_frames;
+
+	Sound() : cooldown_frames(), max_cooldown_frames(2) { }
 };
 
 IXAudio2* gXAudio;
@@ -117,7 +121,43 @@ void SoundInit() {
 		return;
 	}
 
-	load_riff(gXAudio, &gSound[(int)sound_id::DIT],	"data\\dit.wav", 3);
+	load_riff(gXAudio, &gSound[(int)sound_id::DIT],				"data\\dit.wav", 3);
+	load_riff(gXAudio, &gSound[(int)sound_id::PICKUP_COLLECT],	"data\\pickup_collect.wav", 6);
+	load_riff(gXAudio, &gSound[(int)sound_id::PLAYER_FIRE],		"data\\player_fire.wav", 5);
+	load_riff(gXAudio, &gSound[(int)sound_id::PLAYER_FIRE],		"data\\player_fire_1.wav", 5);
+	load_riff(gXAudio, &gSound[(int)sound_id::PLAYER_FIRE],		"data\\player_fire_2.wav", 5);
+	load_riff(gXAudio, &gSound[(int)sound_id::UNIT_EXPLODE],	"data\\unit_explode.wav", 3);
+	load_riff(gXAudio, &gSound[(int)sound_id::UNIT_EXPLODE],	"data\\unit_explode_1.wav", 3);
+	load_riff(gXAudio, &gSound[(int)sound_id::UNIT_EXPLODE],	"data\\unit_explode_2.wav", 3);
+	load_riff(gXAudio, &gSound[(int)sound_id::UNIT_EXPLODE],	"data\\unit_explode_3.wav", 3);
+	load_riff(gXAudio, &gSound[(int)sound_id::UNIT_EXPLODE],	"data\\unit_explode_3.wav", 3);
+	load_riff(gXAudio, &gSound[(int)sound_id::BULLET_HIT_WALL],	"data\\bullet_hit_wall.wav", 3);
+	load_riff(gXAudio, &gSound[(int)sound_id::BULLET_DEFLECT],	"data\\bullet_deflect.wav", 1);
+	load_riff(gXAudio, &gSound[(int)sound_id::PLAYER_HIT],		"data\\player_hit.wav", 3);
+	load_riff(gXAudio, &gSound[(int)sound_id::PLAYER_DIE],		"data\\player_die.wav", 3);
+	load_riff(gXAudio, &gSound[(int)sound_id::PLAYER_RECHARGE],	"data\\player_recharge.wav", 3);
+	load_riff(gXAudio, &gSound[(int)sound_id::TRACKER_SPAWN],	"data\\tracker_spawn.wav", 3);
+	load_riff(gXAudio, &gSound[(int)sound_id::SHOOTING_STAR_HIT],"data\\shooting_star_hit.wav", 3);
+	load_riff(gXAudio, &gSound[(int)sound_id::PLAYER_SPAWN],	"data\\player_spawn.wav", 1);
+	load_riff(gXAudio, &gSound[(int)sound_id::PLAYER_SPAWN_END],"data\\player_spawn_end.wav", 1);
+	load_riff(gXAudio, &gSound[(int)sound_id::PLAYER_SHIELD_END],"data\\player_shield_end.wav", 1);
+	load_riff(gXAudio, &gSound[(int)sound_id::ASTEROID_BOUNCE],	"data\\asteroid_bounce.wav", 3);
+	load_riff(gXAudio, &gSound[(int)sound_id::TRACKER_BOUNCE],	"data\\tracker_bounce.wav", 3);
+
+	gSound[(int)sound_id::PICKUP_COLLECT].max_cooldown_frames = 1;
+	gSound[(int)sound_id::BULLET_DEFLECT].max_cooldown_frames = 5;
+	gSound[(int)sound_id::SHOOTING_STAR_HIT].max_cooldown_frames = 5;
+	gSound[(int)sound_id::ASTEROID_BOUNCE].max_cooldown_frames = 15;
+	gSound[(int)sound_id::TRACKER_BOUNCE].max_cooldown_frames = 5;
+}
+
+void SoundUpdate() {
+	for(int i = 0; i < (int)sound_id::MAX; i++) {
+		Sound& sound = gSound[i];
+
+		if (sound.cooldown_frames > 0)
+			sound.cooldown_frames--;
+	}
 }
 
 void SoundShutdown()  {
@@ -147,14 +187,17 @@ void SoundShutdown()  {
 
 random g_sound_rand;
 
-void SoundPlay(sound_id sid, float freq, float volume) {
+bool SoundPlay(sound_id sid, float freq, float volume) {
 	if (!gXAudio)
-		return;
+		return false;
 
 	Sound& sound = gSound[(int)sid];
 
+	if (sound.cooldown_frames > 0)
+		return false;
+
 	if (sound.variants.empty())
-		return;
+		return false;
 
 	SoundVariant* sv = sound.variants[g_sound_rand.rand(sound.variants.size())];
 
@@ -178,13 +221,18 @@ void SoundPlay(sound_id sid, float freq, float volume) {
 		}
 	}
 
-	if (best) {
-		// todo: should store all sounds played this frame and coalesce similar ones
-		best->Stop();
-		best->FlushSourceBuffers();
-		best->SubmitSourceBuffer(&sv->buffer);
-		best->SetFrequencyRatio(freq);
-		best->SetVolume(volume);
-		best->Start();
-	}
+	if (!best)
+		return false;
+
+	// todo: should store all sounds played this frame and coalesce similar ones
+	best->Stop();
+	best->FlushSourceBuffers();
+	best->SubmitSourceBuffer(&sv->buffer);
+	best->SetFrequencyRatio(freq);
+	best->SetVolume(volume);
+	best->Start();
+
+	sound.cooldown_frames = sound.max_cooldown_frames;
+
+	return true;
 }

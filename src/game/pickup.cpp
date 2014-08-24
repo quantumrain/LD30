@@ -22,7 +22,11 @@ void pickup::tick() {
 		float l = length_sq(d);
 
 		if (l < square(_radius + p->_radius)) {
-			//SoundPlay(sound_id::DIT, 8.0f, 0.5f);
+			float r[3] = { 1.0f, 1.0f, 1.25f };
+			static int roll;
+
+			if (SoundPlay(sound_id::PICKUP_COLLECT, r[roll], _world->r.range(0.5f, 0.7f)))
+				roll = (roll + 1) % 3;
 			
 			_world->score += 5 * _world->multi;
 

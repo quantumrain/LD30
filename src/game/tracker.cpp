@@ -8,6 +8,10 @@ tracker::tracker() : unit(ET_TRACKER), _drift_time(), _dizzy() {
 	_radius = 8.0f;
 }
 
+void tracker::init() {
+	SoundPlay(sound_id::TRACKER_SPAWN, _world->r.range(0.9f, 1.1f), _world->r.range(0.15f, 0.3f));
+}
+
 void tracker::tick() {
 	if (_drift_time-- <= 0) {
 		_drift_force	= _world->r.range(vec2(10.0f));

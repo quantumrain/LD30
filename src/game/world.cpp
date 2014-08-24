@@ -18,7 +18,7 @@ template<typename C> void prune(C& c) {
 
 // world
 
-world::world() : player(), spawn_time(), level_time(), kills(), score(), multi(), hiscore() {
+world::world() : player(), shake(), spawn_time(), level_time(), kills(), score(), multi(), hiscore() {
 }
 
 void world_init(world* w) {
@@ -28,6 +28,8 @@ void world_init(world* w) {
 	w->outer_limit	= { w->limit.min * 1.5f, w->limit.max * 1.5f };
 
 	spawn_entity(w, new player);
+
+	w->shake		= 0.0f;
 
 	w->spawn_time	= 60;
 	w->level_time	= 0;
@@ -54,11 +56,14 @@ void world_update(world* w) {
 	// camera
 
 	if (w->player) {
-		w->camera_target = lerp(w->camera_target, w->player->_pos * 0.25f, 0.2f);
+		w->camera_lerp = lerp(w->camera_lerp, w->player->_pos * 0.25f, 0.2f);
 	}
 	else {
-		w->camera_target *= 0.95f;
+		w->camera_lerp *= 0.95f;
 	}
+
+	w->camera_target = w->camera_lerp + w->r.range(vec2(w->shake));
+	w->shake *= w->player ? 0.5f : 0.9f;
 
 	// spawn
 
@@ -343,6 +348,17 @@ void avoid_crowd(world* w, entity* self, bool asteroids_too) {
 
 				aa->_rot_v += dot(n, aa->_vel) * DT;
 				bb->_rot_v += dot(-n, bb->_vel) * DT;
+
+				float v = 2.0f - (dot(normalise(aa->_vel), normalise(bb->_vel)) + 1.0f);
+
+				SoundPlay(sound_id::ASTEROID_BOUNCE, w->r.range(0.9f, 1.1f), clamp(w->r.range(0.2f, 0.3f) * v, 0.05f, 0.5f));
+			}
+		}
+		else {
+			if ((self->_type == ET_TRACKER) && (e->_type == ET_ASTEROID)) {
+				float v = 2.0f - (dot(normalise(self->_vel), normalise(e->_vel)) + 1.0f);
+
+				SoundPlay(sound_id::TRACKER_BOUNCE, w->r.range(0.7f, 1.2f), clamp(w->r.range(0.2f, 0.3f) * v, 0.05f, 0.5f));
 			}
 		}
 	}

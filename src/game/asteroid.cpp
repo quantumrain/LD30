@@ -4,7 +4,7 @@
 
 extern random g_rand;
 
-asteroid::asteroid() : unit(ET_ASTEROID), _rot_v() {
+asteroid::asteroid() : unit(ET_ASTEROID), _rot_v(), _flash() {
 	_flags |= EF_USE_OUTER_LIMIT | EF_ENEMY;
 	_colour = colour(1.0f, 0.15f, 0.1f, 1.0f);
 	_radius = 20.0f;
@@ -26,6 +26,9 @@ void asteroid::init() {
 }
 
 void asteroid::tick() {
+	if (_flash > 0)
+		_flash--;
+
 	_rot += _rot_v * DT;
 	avoid_crowd(_world, this, false);
 }
@@ -53,16 +56,28 @@ void asteroid::draw(draw_context* dc) {
 		p[i] = rotation(f) * _profile[i];
 	}
 
+	float fc = 0.0f;//_flash / 2.0f;
+
+	colour cc = lerp(_colour, colour(10.0f), fc);
+	colour c = lerp(colour(0.0f, 1.0f), colour(10.0f, 10.0f, 10.0f, 0.85f), fc);
+
 	float thi = 1.5f;
 
-	for(int i = 0, j = NUM_AST_PROFILE - 1; i < NUM_AST_PROFILE; j = i, i++) dc->tri(vec2(), p[i] * _radius, p[j] * _radius, _colour);
-	for(int i = 0, j = NUM_AST_PROFILE - 1; i < NUM_AST_PROFILE; j = i, i++) dc->tri(vec2(), p[i] * (_radius - thi), p[j] * (_radius - thi), colour(0.0f, 1.0f));
+	for(int i = 0, j = NUM_AST_PROFILE - 1; i < NUM_AST_PROFILE; j = i, i++) dc->tri(vec2(), p[i] * _radius, p[j] * _radius, cc);
+	for(int i = 0, j = NUM_AST_PROFILE - 1; i < NUM_AST_PROFILE; j = i, i++) dc->tri(vec2(), p[i] * (_radius - thi), p[j] * (_radius - thi), c);
 }
 
 void asteroid::damage(damage_desc* dd) {
 	if (dd->type == damage_type::BULLET) {
-		if (dd->cause)
+		if (dd->cause) {
 			_vel += dd->cause->_vel * 0.0015f;
+
+			for(int i = 0; i < 4; i++) {
+				psys_spawn(dd->cause->_pos, vec2(), 0.0f, 10.0f, 10.0f, 0.0f, colour(), 2);
+			}
+		}
+
+		_flash = 2;
 	}
 	else if (dd->type == damage_type::PUSH) {
 		if (dd->cause)
