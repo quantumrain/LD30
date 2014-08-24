@@ -161,6 +161,7 @@ struct tracker : unit {
 struct shooting_star : unit {
 	shooting_star();
 
+	virtual void init();
 	virtual void tick();
 	virtual void post_tick();
 	virtual void hit_wall(int clipped);
@@ -170,6 +171,7 @@ struct shooting_star : unit {
 
 	int _flash;
 	vec2 _desired_vel;
+	bool _tada;
 };
 
 #define NUM_AST_PROFILE 12
@@ -223,6 +225,7 @@ struct world {
 	u64 multi;
 
 	u64 hiscore;
+	bool had_hiscore;
 
 	world();
 };

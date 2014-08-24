@@ -143,12 +143,17 @@ void SoundInit() {
 	load_riff(gXAudio, &gSound[(int)sound_id::PLAYER_SHIELD_END],"data\\player_shield_end.wav", 1);
 	load_riff(gXAudio, &gSound[(int)sound_id::ASTEROID_BOUNCE],	"data\\asteroid_bounce.wav", 3);
 	load_riff(gXAudio, &gSound[(int)sound_id::TRACKER_BOUNCE],	"data\\tracker_bounce.wav", 3);
+	load_riff(gXAudio, &gSound[(int)sound_id::SHOOTING_STAR_SPAWN],"data\\shooting_star_spawn.wav", 8);
+	load_riff(gXAudio, &gSound[(int)sound_id::SHOOTING_STAR_SPAWN_END],"data\\shooting_star_spawn_end.wav", 8);
+	load_riff(gXAudio, &gSound[(int)sound_id::HISCORE_BEAT],	"data\\hiscore_beat.wav", 8);
 
-	gSound[(int)sound_id::PICKUP_COLLECT].max_cooldown_frames = 1;
+	gSound[(int)sound_id::PICKUP_COLLECT].max_cooldown_frames = 0;
 	gSound[(int)sound_id::BULLET_DEFLECT].max_cooldown_frames = 5;
 	gSound[(int)sound_id::SHOOTING_STAR_HIT].max_cooldown_frames = 5;
 	gSound[(int)sound_id::ASTEROID_BOUNCE].max_cooldown_frames = 15;
 	gSound[(int)sound_id::TRACKER_BOUNCE].max_cooldown_frames = 5;
+	gSound[(int)sound_id::SHOOTING_STAR_SPAWN].max_cooldown_frames = 5;
+	gSound[(int)sound_id::SHOOTING_STAR_SPAWN_END].max_cooldown_frames = 5;
 }
 
 void SoundUpdate() {

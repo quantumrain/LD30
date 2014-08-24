@@ -18,7 +18,7 @@ template<typename C> void prune(C& c) {
 
 // world
 
-world::world() : player(), shake(), spawn_time(), level_time(), kills(), score(), multi(), hiscore() {
+world::world() : player(), shake(), spawn_time(), level_time(), kills(), score(), multi(), hiscore(), had_hiscore() {
 }
 
 void world_init(world* w) {
@@ -37,6 +37,8 @@ void world_init(world* w) {
 
 	w->score		= 0;
 	w->multi		= 1;
+
+	w->had_hiscore	= w->hiscore == 0;
 }
 
 void world_clear(world* w) {
@@ -124,8 +126,14 @@ void world_update(world* w) {
 
 	// score
 
-	if (w->score > w->hiscore) // todo: sound?
+	if (w->score > w->hiscore) {
 		w->hiscore = w->score;
+
+		if (!w->had_hiscore) {
+			w->had_hiscore = true;
+			SoundPlay(sound_id::HISCORE_BEAT, 1.0f, 1.5f);
+		}
+	}
 }
 
 mat44 make_proj_view(vec2 centre, float fov, float virtual_height) {

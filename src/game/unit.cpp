@@ -45,7 +45,7 @@ void unit::killed(damage_desc* dd) {
 
 	fx_explosion(_pos, 1.0f, 10, _colour, 1.0f);
 
-	SoundPlay(sound_id::UNIT_EXPLODE, _world->r.range(0.9f, 1.0f), _world->r.range(0.75f, 1.0f));
+	SoundPlay(sound_id::UNIT_EXPLODE, _world->r.range(0.9f, 1.0f), _world->r.range(0.85f, 1.1f));
 
 	_world->shake += 4.0f;
 

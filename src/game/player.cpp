@@ -13,7 +13,7 @@ player::player() : unit(ET_PLAYER), _reload_time(), _health_recharge(), _shield_
 }
 
 void player::init() {
-	SoundPlay(sound_id::PLAYER_SPAWN, 1.0f, 1.0f);
+	SoundPlay(sound_id::PLAYER_SPAWN, 1.0f, 1.5f);
 }
 
 void player::tick() {
@@ -147,7 +147,7 @@ void player::try_fire(vec2 dir) {
 	if (_reload_time > 0)
 		return;
 
-	SoundPlay(sound_id::PLAYER_FIRE, _world->r.range(1.0f, 1.0f), lerp(0.1f, 0.25f, square(_world->r.rand(1.0f))));
+	SoundPlay(sound_id::PLAYER_FIRE, _world->r.range(1.0f, 1.0f), lerp(0.1f, 0.85f, square(_world->r.rand(1.0f))));
 
 	_reload_time = 4;
 

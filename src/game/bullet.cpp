@@ -39,6 +39,8 @@ void bullet::hit_wall(int clipped) {
 
 	fx_explosion(_pos, 0.3f, 1, _colour, 0.5f);
 
+	if (_world->shake < 0.5f) _world->shake += 0.25f;
+
 	SoundPlay(sound_id::BULLET_HIT_WALL, _world->r.range(0.9f, 1.0f), _world->r.range(0.15f, 0.25f));
 }
 

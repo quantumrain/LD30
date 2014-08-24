@@ -4,7 +4,7 @@
 
 extern random g_rand;
 
-shooting_star::shooting_star() : unit(ET_SHOOTING_STAR), _flash() {
+shooting_star::shooting_star() : unit(ET_SHOOTING_STAR), _flash(), _tada() {
 	_flags |= EF_USE_OUTER_LIMIT | EF_ENEMY;
 	_colour = colour(1.0f, 0.15f, 0.1f, 1.0f);
 	_radius = 5.0f;
@@ -12,11 +12,28 @@ shooting_star::shooting_star() : unit(ET_SHOOTING_STAR), _flash() {
 //	instant_spawn();
 }
 
+void shooting_star::init() {
+	static float wave;
+	wave += 0.1f;
+	float s = square(1.0f + cosf(wave)) * 0.5f;
+
+	SoundPlay(sound_id::SHOOTING_STAR_SPAWN, _world->r.range(0.7f, 1.3f), _world->r.range(0.1f, 0.6f) * lerp(0.5f, 1.0f, s));
+}
+
 void shooting_star::tick() {
 	if (_flash > 0)
 		_flash--;
 
 	_vel = lerp(_vel, _desired_vel, 0.1f);
+
+	if (!_tada) {
+		static float wave;
+		wave += 0.1f;
+		float s = (1.0f + cosf(wave)) * 0.5f;
+
+		SoundPlay(sound_id::SHOOTING_STAR_SPAWN_END, _world->r.range(0.7f, 1.3f), _world->r.range(0.1f, 0.4f) * lerp(0.5f, 1.0f, s));
+		_tada = true;
+	}
 }
 
 void shooting_star::post_tick() {
