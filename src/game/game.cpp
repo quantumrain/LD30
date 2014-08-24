@@ -4,17 +4,13 @@
 
 /*
 
-	Everything that happens in the game is connected?
+	TODO:
 
-	Miss a shot and once your shots hit the wall they turn into fast moving projectiles from the top/left-ish-random of the screen, indestructable must be dodged (shooting star - light blue)
+	dodging enemies?
 
-	Kill an enemy, spawn a slower moving but larger projectile from the top/right of screen (asteroid - red)
+	decide whether to keep multiplier, or just use collection for score (crazy idea - kills = mulitplier, pickup = score?)
 
-	If any of these spawned projectiles hit each other they'll bounce off each other making crazy trajectories
-	If a shooting star hits an asteroid, the asteroid will split into... 3 (?) randomly aimed mini-asteroids, further hits just null-ify
-
-	Standard killable enemies either track, or track and dodge...?
-
+	display score + multiplier as popup text in arena on collect/kill (say, every 1000 for first 10k, then every 2500, etc...)
 
 */
 

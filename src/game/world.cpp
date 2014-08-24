@@ -29,7 +29,7 @@ void world_init(world* w) {
 
 	spawn_entity(w, new player);
 
-	w->spawn_time	= 0;
+	w->spawn_time	= 30;
 	w->level_time	= 0;
 	w->kills		= 0;
 

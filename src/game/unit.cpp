@@ -24,21 +24,23 @@ void unit::damage(damage_desc* dd) {
 		return;
 
 	if ((_health -= dd->value) <= 0)
-		killed();
+		killed(dd);
 	else
-		flinch();
+		flinch(dd);
 }
 
-void unit::flinch() {
+void unit::flinch(damage_desc* dd) {
 }
 
-void unit::killed() {
+void unit::killed(damage_desc* dd) {
 	if (_flags & EF_ENEMY) {
-		_world->kills++;
-		_world->score += 5 * _world->multi;
-	}
+		if (dd->type == damage_type::BULLET) {
+			_world->kills++;
+			_world->score += 5 * _world->multi;
 
-	spawn_pickup(_world, _pos);
+			spawn_pickup(_world, _pos);
+		}
+	}
 
 	//SoundPlay(sound_id::DIT, 1.0f, 1.0f);
 

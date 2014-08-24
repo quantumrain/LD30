@@ -76,8 +76,8 @@ struct unit : entity {
 	virtual void post_tick();
 
 	virtual void damage(damage_desc* dd);
-	virtual void flinch();
-	virtual void killed();
+	virtual void flinch(damage_desc* dd);
+	virtual void killed(damage_desc* dd);
 
 	int _health;
 };
@@ -90,8 +90,8 @@ struct player : unit {
 	virtual void draw(draw_context* dc);
 
 	virtual void damage(damage_desc* dd);
-	virtual void flinch();
-	virtual void killed();
+	virtual void flinch(damage_desc* dd);
+	virtual void killed(damage_desc* dd);
 
 	void try_fire(vec2 dir);
 

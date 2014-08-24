@@ -91,14 +91,14 @@ void player::damage(damage_desc* dd) {
 	unit::damage(dd);
 }
 
-void player::flinch() {
+void player::flinch(damage_desc* dd) {
 	_health_recharge = 0;
 	_shield_time = 30;
 
 	SoundPlay(sound_id::DIT, 1.0f, 1.0f);
 }
 
-void player::killed() {
+void player::killed(damage_desc* dd) {
 	SoundPlay(sound_id::DIT, 0.1f, 1.0f);
 	destroy();
 }
