@@ -4,7 +4,7 @@
 
 extern vec2 g_mouse_screen;
 
-player::player() : unit(ET_PLAYER), _reload_time(), _health_recharge(), _shield_time() {
+player::player() : unit(ET_PLAYER), _reload_time(), _health_recharge(), _shield_time(), _recharge_pulse() {
 	_flags |= EF_PLAYER;
 	_colour = colours::ORANGE * 1.5f;
 	_radius = 6.0f;
@@ -28,6 +28,7 @@ void player::tick() {
 	if (_health < 3) {
 		if (++_health_recharge >= (5 * 60)) {
 			_health_recharge = 0;
+			_recharge_pulse = 10;
 			_health = clamp(_health + 1, 0, 3);
 
 			SoundPlay(sound_id::DIT, 3.0f, 1.0f);
@@ -36,6 +37,9 @@ void player::tick() {
 
 	if (_shield_time > 0)
 		_shield_time--;
+
+	if (_recharge_pulse > 0)
+		_recharge_pulse--;
 }
 
 void player::post_tick() {
@@ -57,6 +61,8 @@ void player::post_tick() {
 }
 
 void player::draw(draw_context* dc) {
+	float r = _radius + square(_recharge_pulse / 10.0f) * 4.0f;
+
 	colour c;
 
 	switch(_health) {
@@ -67,16 +73,16 @@ void player::draw(draw_context* dc) {
 	}
 
 	if (_shield_time > 0) {
-		dc->rect(-vec2(_radius * 1.5f), vec2(_radius * 1.5f), c);
-		dc->rect(-vec2(_radius * 1.25f), vec2(_radius * 1.25f), colour(0.0f, 1.0f));
+		dc->rect(-vec2(r * 1.5f), vec2(r * 1.5f), c);
+		dc->rect(-vec2(r * 1.25f), vec2(r * 1.25f), colour(0.0f, 1.0f));
 	}
 
-	dc->rect(-vec2(_radius), vec2(_radius), c);
-	dc->rect(-vec2(_radius * 0.75f), vec2(_radius * 0.75f), colour(0.0f, 1.0f));
+	dc->rect(-vec2(r), vec2(r), c);
+	dc->rect(-vec2(r * 0.75f), vec2(r * 0.75f), colour(0.0f, 1.0f));
 
 	for(int i = 0; i < _health; i++) {
-		float w = _radius * 0.5f;
-		float h = (_radius * 0.5f) / 4.0f;
+		float w = r * 0.5f;
+		float h = (r * 0.5f) / 4.0f;
 
 		float y = h * (1 - i) * 3.0f;
 
@@ -94,8 +100,11 @@ void player::damage(damage_desc* dd) {
 void player::flinch(damage_desc* dd) {
 	_health_recharge = 0;
 	_shield_time = 30;
+	_recharge_pulse = 10;
 
 	SoundPlay(sound_id::DIT, 1.0f, 1.0f);
+
+	spawn_bomb(_world, _pos);
 }
 
 void player::killed(damage_desc* dd) {

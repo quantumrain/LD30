@@ -4,7 +4,7 @@
 
 #define SPAWN_TIME 30
 
-entity::entity(entity_type type) : _world(), _flags(), _type(type), _radius(10.0f), _spawn_timer() {
+entity::entity(entity_type type) : _world(), _flags(), _type(type), _radius(10.0f), _rot(), _spawn_timer() {
 }
 
 entity::~entity() {
@@ -60,7 +60,7 @@ void entity::update() {
 }
 
 void entity::render(draw_context* dc) {
-	dc->push_transform(translate(vec3(_pos, 0.0f)));
+	dc->push_transform(translate(vec3(_pos, 0.0f)) * rotate_z(_rot));
 
 	if (_flags & EF_SPAWNING) {
 		float t = _spawn_timer / (float)SPAWN_TIME;

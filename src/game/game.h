@@ -15,7 +15,8 @@ enum entity_flag {
 	EF_ENEMY			= 0x10,
 	EF_SPAWNING			= 0x20,
 	EF_UNIT				= 0x40,
-	EF_PICKUP			= 0x80
+	EF_PICKUP			= 0x80,
+	EF_BOMB				= 0x100
 };
 
 enum entity_type {
@@ -26,7 +27,8 @@ enum entity_type {
 	ET_SHOOTING_STAR,
 	ET_TRACKER,
 	ET_DODGER,
-	ET_PICKUP
+	ET_PICKUP,
+	ET_BOMB
 };
 
 struct entity {
@@ -35,7 +37,7 @@ struct entity {
 
 	void destroy();
 	void update();
-	void render(draw_context* dc);
+	virtual void render(draw_context* dc);
 
 	virtual void init();
 	virtual void tick();
@@ -51,13 +53,15 @@ struct entity {
 	vec2 _vel;
 	float _radius;
 	colour _colour;
+	float _rot;
 	int _spawn_timer;
 };
 
 enum class damage_type {
 	BULLET,
 	COLLISION,
-	PUSH
+	PUSH,
+	BOMB
 };
 
 struct damage_desc {
@@ -98,6 +102,7 @@ struct player : unit {
 	int _reload_time;
 	int _health_recharge;
 	int _shield_time;
+	int _recharge_pulse;
 };
 
 struct bullet : entity {
@@ -106,6 +111,18 @@ struct bullet : entity {
 	virtual void tick();
 	virtual void post_tick();
 	virtual void hit_wall(int clipped);
+	virtual void render(draw_context* dc);
+
+	int _time;
+};
+
+struct bomb : entity {
+	bomb();
+
+	virtual void tick();
+	virtual void post_tick();
+	virtual void hit_wall(int clipped);
+	virtual void draw(draw_context* dc);
 
 	int _time;
 };
@@ -129,8 +146,11 @@ struct tracker : unit {
 	virtual void post_tick();
 	virtual void hit_wall(int clipped);
 
+	virtual void damage(damage_desc* dd);
+
 	int _drift_time;
 	vec2 _drift_force;
+	int _dizzy;
 };
 
 struct shooting_star : unit {
@@ -174,6 +194,7 @@ struct world {
 	list<entity> entities;
 
 	mat44 proj_view;
+	vec2 camera_target;
 
 	int spawn_time;
 	int level_time;
@@ -181,6 +202,8 @@ struct world {
 
 	u64 score;
 	u64 multi;
+
+	u64 hiscore;
 
 	world();
 };
@@ -208,6 +231,7 @@ void spawn_shooting_star(world* w, entity* instigator);
 void spawn_asteroid(world* w);
 void spawn_mini_asteroids(world* w, vec2 pos);
 void spawn_pickup(world* w, vec2 pos);
+void spawn_bomb(world* w, vec2 pos);
 
 // menu
 

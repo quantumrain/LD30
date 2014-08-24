@@ -39,6 +39,8 @@ void asteroid::damage(damage_desc* dd) {
 			_vel += d * 20.0f;
 		}
 	}
+	else if (dd->type == damage_type::BOMB) {
+	}
 }
 
 vec2 asteroid_target(world* w, int f, float radius) {

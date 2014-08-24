@@ -30,6 +30,8 @@ void game_init() {
 void game_update() {
 	world* w = &g_world;
 
+	g_capture_mouse = g_game_state == game_state::GAME;
+
 	switch(g_game_state) {
 		case game_state::MENU:
 			if (menu_update()) {
@@ -74,6 +76,8 @@ void game_render() {
 
 			draw_string(&dc_ui, vec2(5.0f, 5.0f), 1.5f, 0, colours::SILVER, "%I64i", g_world.score);
 			draw_string(&dc_ui, vec2(5.0f, 17.5f), 0.75f, 0, colours::SILVER, "x%I64i", g_world.multi);
+
+			draw_string(&dc_ui, vec2(635.0f, 5.0f), 1.5f, DT_RIGHT, colours::SILVER, "%I64i", g_world.hiscore);
 		break;
 	}
 }

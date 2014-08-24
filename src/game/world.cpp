@@ -18,7 +18,7 @@ template<typename C> void prune(C& c) {
 
 // world
 
-world::world() : player(), spawn_time(), level_time(), kills(), score(), multi() {
+world::world() : player(), spawn_time(), level_time(), kills(), score(), multi(), hiscore() {
 }
 
 void world_init(world* w) {
@@ -51,9 +51,15 @@ void world_update(world* w) {
 
 	for_all(w->entities, [](entity* e) { e->update(); });
 
-	// spawn
+	// camera
 
 	if (w->player) {
+		w->camera_target = lerp(w->camera_target, w->player->_pos * 0.25f, 0.2f);
+	}
+
+	// spawn
+
+	if (player* pl = w->player) {
 		int num_trackers = 0;
 
 		for_all(w->entities, [&](entity* e) { if (e->_type == ET_TRACKER) num_trackers++; });
@@ -66,7 +72,14 @@ void world_update(world* w) {
 		if (++w->spawn_time > t) {
 			tracker* t = spawn_entity(w, new tracker);
 
-			vec2 p = w->r.range(w->limit.min + t->_radius, w->limit.max - t->_radius);
+			vec2 p;
+
+			for(int i = 0; i < 10; i++) {
+				p = w->r.range(w->limit.min + t->_radius, w->limit.max - t->_radius);
+
+				if (length_sq(pl->_pos - p) > square(100.0f))
+					break;
+			}
 
 			t->_pos = p;
 			t->_old_pos = p;
@@ -89,6 +102,11 @@ void world_update(world* w) {
 	}
 
 	prune(w->entities);
+
+	// score
+
+	if (w->score > w->hiscore) // todo: sound?
+		w->hiscore = w->score;
 }
 
 mat44 make_proj_view(vec2 centre, float fov, float virtual_height) {
@@ -101,16 +119,11 @@ mat44 make_proj_view(vec2 centre, float fov, float virtual_height) {
 }
 
 void world_render(world* w, draw_context* dc) {
-	vec2 camera_target;
 	float zoom = 0.9f;
-
-	if (w->player) {
-		camera_target = w->player->_pos * 0.25f;
-	}
 
 	// camera
 
-	w->proj_view = make_proj_view(camera_target, 90.0f, (360.0f + 20.0f) * zoom);
+	w->proj_view = make_proj_view(w->camera_target, 90.0f, (360.0f + 20.0f) * zoom);
 
 	frustum fr		= make_frustum(w->proj_view);
 	vec4 draw_plane	= { 0, 0, 1, 0 };
@@ -148,6 +161,7 @@ void world_render(world* w, draw_context* dc) {
 
 	// entities
 
+	for(auto e : w->entities) if (e->_flags & EF_BOMB) e->render(dc);
 	for(auto e : w->entities) if (e->_flags & EF_PICKUP) e->render(dc);
 	for(auto e : w->entities) if (e->_flags & EF_BULLET) e->render(dc);
 	for(auto e : w->entities) if (e->_flags & EF_ENEMY) e->render(dc);
@@ -157,7 +171,30 @@ void world_render(world* w, draw_context* dc) {
 	
 	// mouse
 
-	if (gUsingMouse) dc->rect(g_mouse_screen - 2, g_mouse_screen + 2, colour());
+	if (gUsingMouse) {
+		dc->push_transform(translate(vec3(g_mouse_screen, 0.0f)));
+
+		float _gap[2] = { 8.5f, 8.0f };
+		float _siz[2] = { 4.5f, 4.0f };
+		float _thi[2] = { 3.0f, 2.0f };
+		colour _c[2] = { colour(0.0f, 1.0f), colour(1.0f) };
+
+		for(int i = 0; i < 2; i++) {
+			float gap = _gap[i];
+			float siz = _siz[i];
+			float thi = _thi[i];
+
+			dc->rect({-siz, -gap }, { siz, -gap + thi }, _c[i]);
+			dc->rect({-siz, gap - thi }, { siz, gap }, _c[i]);
+
+			dc->rect({ -gap, -siz }, { -gap + thi, siz }, _c[i]);
+			dc->rect({ gap - thi, -siz }, { gap, siz }, _c[i]);
+
+			dc->rect(-1.0f, 1.0f, _c[i]);
+		}
+
+		dc->pop_transform();
+	}
 }
 
 // helpers

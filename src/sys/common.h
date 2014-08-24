@@ -85,6 +85,7 @@ extern vec2i gMousePos;
 extern int gMouseButtons;
 extern int gMouseTime;
 extern bool gUsingMouse;
+extern bool g_capture_mouse;
 
 extern vec2 gJoyLeft;
 extern vec2 gJoyRight;

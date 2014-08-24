@@ -21,6 +21,12 @@ void shooting_star::post_tick() {
 		spawn_pickup(_world, _pos);
 		destroy();
 	}
+
+	if (unit* u = find_overlapping_unit(_world, _pos, ET_TRACKER, _radius)) {
+		u->damage(&damage_desc(damage_type::PUSH, 0, this));
+		spawn_pickup(_world, _pos);
+		destroy();
+	}
 }
 
 void shooting_star::hit_wall(int clipped) {

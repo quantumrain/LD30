@@ -105,12 +105,14 @@ void DoFrame() {
 			MapWindowPoints(gMainWnd, 0, (POINT*)&rc, 2);
 			ClipCursor(&rc);
 			g_mouse_is_captured = true;
+			PostMessage(gMainWnd, WM_APP + 1, 0, 0);
 		}
 	}
 	else {
 		if (g_mouse_is_captured) {
 			ClipCursor(0);
 			g_mouse_is_captured = false;
+			PostMessage(gMainWnd, WM_APP + 1, 0, 0);
 		}
 	}
 
@@ -226,7 +228,18 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) 
 			GetPresentParams(&pp);
 			gDevice->Reset(&pp); // oh d3d9 how I hate thee
 		}
-		break;
+		return 0;
+
+		case (WM_APP + 1):
+			if (g_mouse_is_captured) {
+				ShowCursor(FALSE);
+				SetCursor(0);
+			}
+			else {
+				ShowCursor(TRUE);
+				SetCursor(LoadCursor(0, MAKEINTRESOURCE(IDC_ARROW)));
+			}
+		return 0;
 
 		case WM_ENTERMENULOOP: g_win_in_menu = true; break;
 		case WM_EXITMENULOOP: g_win_in_menu = false; break;
@@ -262,8 +275,10 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) 
 
 		case WM_SETCURSOR:
 			if (LOWORD(lparam) == HTCLIENT) {
-				SetCursor(0);
-				return 0;
+				if (g_mouse_is_captured) {
+					SetCursor(0);
+					return 0;
+				}
 			}
 		break;
 

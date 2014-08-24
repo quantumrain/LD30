@@ -36,7 +36,8 @@ void unit::killed(damage_desc* dd) {
 	if (_flags & EF_ENEMY) {
 		if (dd->type == damage_type::BULLET) {
 			_world->kills++;
-			_world->score += 5 * _world->multi;
+			_world->multi++;
+			//_world->score += 5 * _world->multi;
 
 			spawn_pickup(_world, _pos);
 		}

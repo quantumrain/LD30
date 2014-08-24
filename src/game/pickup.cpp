@@ -26,7 +26,8 @@ void pickup::post_tick() {
 		if (l < square(_radius + p->_radius)) {
 			SoundPlay(sound_id::DIT, 8.0f, 0.5f);
 			
-			_world->multi++;
+			_world->score += 5 * _world->multi;
+			//_world->multi++;
 
 			destroy();
 		}
