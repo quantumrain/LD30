@@ -146,6 +146,7 @@ struct tracker : unit {
 	virtual void tick();
 	virtual void post_tick();
 	virtual void hit_wall(int clipped);
+	virtual void draw(draw_context* dc);
 
 	virtual void damage(damage_desc* dd);
 
@@ -160,8 +161,11 @@ struct shooting_star : unit {
 	virtual void tick();
 	virtual void post_tick();
 	virtual void hit_wall(int clipped);
+	virtual void draw(draw_context* dc);
 
 	virtual void damage(damage_desc* dd);
+
+	int _flash;
 };
 
 #define NUM_AST_PROFILE 12
@@ -255,6 +259,6 @@ void psys_spawn(vec2 pos, vec2 vel, float damp, float size0, float size1, float 
 
 // effects
 
-void fx_explosion(vec2 pos, float strength, int count, colour c);
+void fx_explosion(vec2 pos, float strength, int count, colour c, float psize);
 
 #endif // GAME_H

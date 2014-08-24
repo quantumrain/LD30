@@ -12,7 +12,7 @@ bomb::bomb() : entity(ET_BOMB) {
 void bomb::tick() {
 	float f = 1.0f - square(_time / 13.0f);
 
-	_radius = lerp(4.0f, 60.0f, f);
+	_radius = lerp(4.0f, 70.0f, f);
 
 	if (--_time <= 0)
 		destroy();
@@ -30,7 +30,11 @@ void bomb::post_tick() {
 			continue;
 
 		if (length_sq(_pos - e->_pos) < square(_radius + e->_radius)) {
-			fx_explosion(e->_pos, 0.5f, 5, e->_colour);
+			int		num = (e->_type == ET_ASTEROID) ? 20 : 5;
+			float	str = (e->_type == ET_ASTEROID) ? 1.5f : 0.5f;
+			float	siz = (e->_type == ET_ASTEROID) ? 1.5f : 1.0f;
+
+			fx_explosion(e->_pos, str, num, e->_colour, siz);
 			e->destroy();
 		}
 	}

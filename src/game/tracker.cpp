@@ -4,7 +4,7 @@
 
 tracker::tracker() : unit(ET_TRACKER), _drift_time(), _dizzy() {
 	_flags |= EF_ENEMY;
-	_colour = colours::PURPLE;
+	_colour = colours::BLUE * 1.25f;
 	_radius = 8.0f;
 }
 
@@ -42,6 +42,25 @@ void tracker::hit_wall(int clipped) {
 	if (clipped & CLIPPED_XP) _vel.x = -fabsf(_vel.x);
 	if (clipped & CLIPPED_YN) _vel.y = fabsf(_vel.y);
 	if (clipped & CLIPPED_YP) _vel.y = -fabsf(_vel.y);
+}
+
+void tracker::draw(draw_context* dc) {
+	for(int i = 0; i < 2; i++) {
+		float f = (i / 2.0f) * PI * 0.5f;
+		dc->push_transform(rotate_z(f));
+		dc->rect(-vec2(_radius), vec2(_radius), _colour);
+		dc->pop_transform();
+	}
+
+	float r = _radius * 0.75f;
+	colour c = colour(0.0f, 0.0f, 0.0f, 1.0f);
+
+	for(int i = 0; i < 2; i++) {
+		float f = (i / 2.0f) * PI * 0.5f;
+		dc->push_transform(rotate_z(f));
+		dc->rect(-vec2(r), vec2(r), c);
+		dc->pop_transform();
+	}
 }
 
 void tracker::damage(damage_desc* dd) {

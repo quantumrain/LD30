@@ -6,8 +6,8 @@ extern random g_rand;
 
 asteroid::asteroid() : unit(ET_ASTEROID), _rot_v() {
 	_flags |= EF_USE_OUTER_LIMIT | EF_ENEMY;
-	_colour = colours::RED;
-	_radius = 16.0f;
+	_colour = colour(1.0f, 0.15f, 0.1f, 1.0f);
+	_radius = 20.0f;
 
 	instant_spawn();
 }
@@ -34,7 +34,7 @@ void asteroid::post_tick() {
 	unit::post_tick();
 
 	for(int i = 0; i < 2; i++) {
-		vec2 p = _pos + rotation(g_rand.range(PI)) * square(g_rand.rand(1.0f)) * _radius * 1.25f;
+		vec2 p = _pos + rotation(g_rand.range(PI)) * square(g_rand.rand(1.0f)) * _radius;
 
 		psys_spawn(p, 0.0f, 0.9f, 2.0f, 2.0f,  g_rand.range(1.0f), _colour * 0.5f, g_rand.range(24, 40));
 	}

@@ -6,7 +6,7 @@ extern vec2 g_mouse_screen;
 
 player::player() : unit(ET_PLAYER), _reload_time(), _health_recharge(), _shield_time(), _recharge_pulse(), _rot_v() {
 	_flags |= EF_PLAYER;
-	_colour = colours::ORANGE * 1.5f;
+	_colour = colours::GREEN * 1.5f;
 	_radius = 6.0f;
 	_health = 3;
 }
@@ -40,7 +40,7 @@ void player::tick() {
 			_recharge_pulse = 10;
 			_health = clamp(_health + 1, 0, 3);
 
-			SoundPlay(sound_id::DIT, 3.0f, 1.0f);
+			//SoundPlay(sound_id::DIT, 3.0f, 1.0f);
 		}
 	}
 
@@ -76,10 +76,12 @@ void player::draw(draw_context* dc) {
 
 	switch(_health) {
 		default:
-		case 1: c = colours::BLUE * 1.5f; break;
-		case 2: c = colours::GREEN * 1.5f; break;
-		case 3: c = colours::ORANGE * 1.5f; break;
+		case 1: c = colour(1.0f, 0.25f, 0.5f, 1.0f); break;
+		case 2: c = colours::ORANGE; break;
+		case 3: c = colours::GREEN; break;
 	}
+
+	c *= colour(1.5f, 1.0f);
 
 	if (_shield_time > 0) {
 		dc->rect(-vec2(r * 1.5f), vec2(r * 1.5f), c);
@@ -89,13 +91,15 @@ void player::draw(draw_context* dc) {
 	dc->rect(-vec2(r), vec2(r), c);
 	dc->rect(-vec2(r * 0.75f), vec2(r * 0.75f), colour(0.0f, 1.0f));
 
+	float oy = (_health - 1) * 0.5f;
+
 	for(int i = 0; i < _health; i++) {
 		float w = r * 0.5f;
 		float h = (r * 0.5f) / 4.0f;
 
-		float y = h * (1 - i) * 3.0f;
+		float y = h * (i - oy) * 3.0f;
 
-		dc->rect(vec2(-w, y - h), vec2(w, y + h), c);
+		dc->rect(vec2(-w, y - h), vec2(w, y + h), c);// lerp(c, colour(), 0.5f));
 	}
 }
 
@@ -111,13 +115,15 @@ void player::flinch(damage_desc* dd) {
 	_shield_time = 30;
 	_recharge_pulse = 10;
 
-	SoundPlay(sound_id::DIT, 1.0f, 1.0f);
+	//SoundPlay(sound_id::DIT, 1.0f, 1.0f);
 
 	spawn_bomb(_world, _pos);
 }
 
 void player::killed(damage_desc* dd) {
-	SoundPlay(sound_id::DIT, 0.1f, 1.0f);
+	fx_explosion(_pos, 3.0f, 100, colours::ORANGE * 1.5f, 1.0f);
+
+	//SoundPlay(sound_id::DIT, 0.1f, 1.0f);
 	destroy();
 }
 

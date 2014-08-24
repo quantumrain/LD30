@@ -29,7 +29,7 @@ void world_init(world* w) {
 
 	spawn_entity(w, new player);
 
-	w->spawn_time	= 30;
+	w->spawn_time	= 60;
 	w->level_time	= 0;
 	w->kills		= 0;
 
@@ -55,6 +55,9 @@ void world_update(world* w) {
 
 	if (w->player) {
 		w->camera_target = lerp(w->camera_target, w->player->_pos * 0.25f, 0.2f);
+	}
+	else {
+		w->camera_target *= 0.95f;
 	}
 
 	// spawn
@@ -92,6 +95,17 @@ void world_update(world* w) {
 
 			for(int i = 0; i < num_spawns; i++) spawn_asteroid(w);
 		}
+	}
+
+	// player death
+
+	if (!w->player) {
+		for_all(w->entities, [&](entity* e) { 
+			if (e->_flags & EF_ENEMY) {
+				fx_explosion(e->_pos, 1.0f, 10, e->_colour, 1.0f);
+			}
+			e->destroy();
+		});
 	}
 
 	// prune
@@ -138,26 +152,32 @@ void world_render(world* w, draw_context* dc) {
 	vec2 p1 = { p3.x, p0.y };
 	vec2 p2 = { p0.x, p3.y };
 
-	colour c0 = colours::AQUA * colour(0.5f, 1.0f);
-	colour c1 = colours::AQUA * colour(0.1f, 0.0f);
+	colour c0 = colour(0.0f, 0.0f, 0.25f, 1.0f);
+	colour c1 = colour(0.0f, 0.0f, 0.15f, 1.0f);
+	colour c2 = colour(0.5f, 0.5f, 1.0f, 1.0f);
 
-	int gh = 20;
+	int gh = 15;
 	int gw = (int)(gh * (16.0f / 9.0f));
 
-	for(int i = 1; i < gh; i++) {
-		float f = i / (float)gh;
-		dc->line(lerp(p0, p2, f), lerp(p1, p3, f), 0.5f, c1);
+	float ix = 1.0f / (float)gw;
+	float iy = 1.0f / (float)gh;
+
+	for(int i = 0; i < gh; i++) {
+		float y0 = lerp(w->limit.min.y, w->limit.max.y, i * iy);
+		float y1 = lerp(w->limit.min.y, w->limit.max.y, (i + 1) * iy);
+
+		for(int j = 0; j < gw; j++) {
+			float x0 = lerp(w->limit.min.x, w->limit.max.x, j * ix);
+			float x1 = lerp(w->limit.min.x, w->limit.max.x, (j + 1) * ix);
+
+			dc->rect({ x0, y0 }, { x1, y1 }, ((i + j) & 1) ? c0 : c1);
+		}
 	}
 
-	for(int i = 1; i < gw; i++) {
-		float f = i / (float)gw;
-		dc->line(lerp(p0, p1, f), lerp(p2, p3, f), 0.5f, c1);
-	}
-
-	dc->line(p0, p1, 1.0f, c0);
-	dc->line(p1, p3, 1.0f, c0);
-	dc->line(p3, p2, 1.0f, c0);
-	dc->line(p2, p0, 1.0f, c0);
+	dc->line(p0, p1, 0.5f, c2);
+	dc->line(p1, p3, 0.5f, c2);
+	dc->line(p3, p2, 0.5f, c2);
+	dc->line(p2, p0, 0.5f, c2);
 
 	// entities
 

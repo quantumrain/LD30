@@ -22,10 +22,9 @@ void pickup::tick() {
 		float l = length_sq(d);
 
 		if (l < square(_radius + p->_radius)) {
-			SoundPlay(sound_id::DIT, 8.0f, 0.5f);
+			//SoundPlay(sound_id::DIT, 8.0f, 0.5f);
 			
 			_world->score += 5 * _world->multi;
-			//_world->multi++;
 
 			destroy();
 		}

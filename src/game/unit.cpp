@@ -43,7 +43,7 @@ void unit::killed(damage_desc* dd) {
 		}
 	}
 
-	fx_explosion(_pos, 1.0f, 10, _colour);
+	fx_explosion(_pos, 1.0f, 10, _colour, 1.0f);
 
 	//SoundPlay(sound_id::DIT, 1.0f, 1.0f);
 

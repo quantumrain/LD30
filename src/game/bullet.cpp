@@ -16,9 +16,13 @@ void bullet::tick() {
 
 void bullet::post_tick() {
 	if (unit* u = find_enemy_near_line(_world, _old_pos, _pos, _radius)) {
-		fx_explosion(_pos, 0.3f, 1, _colour);
-
 		u->damage(&damage_desc(damage_type::BULLET, 1, this));
+
+		if (u->_flags & EF_DESTROYED)
+			fx_explosion(_pos, 0.3f, 1, _colour, 0.75f);
+		else
+			fx_explosion(_pos, 0.15f, 1, _colour, 0.6f);
+
 		destroy();
 	}
 
@@ -29,7 +33,7 @@ void bullet::hit_wall(int clipped) {
 	_time = 0;
 	spawn_shooting_star(_world, this);
 
-	fx_explosion(_pos, 0.3f, 1, _colour);
+	fx_explosion(_pos, 0.3f, 1, _colour, 0.5f);
 }
 
 void bullet::render(draw_context* dc) {

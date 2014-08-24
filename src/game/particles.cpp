@@ -79,19 +79,19 @@ void psys_spawn(vec2 pos, vec2 vel, float damp, float size0, float size1, float 
 
 // effects
 
-void fx_explosion(vec2 pos, float strength, int count, colour c) {
+void fx_explosion(vec2 pos, float strength, int count, colour c, float psize) {
 	int num_a = count * 3;
 	int num_b = count * 2;
 
 	for(int i = 0; i < num_a; i++) {
 		vec2 v = rotation(g_rand.range(PI)) * square(0.5f + g_rand.rand(1.0f)) * 200.0f * strength;
 
-		psys_spawn(pos, v, 0.9f, g_rand.range(6.0f, 10.0f), 1.0f, g_rand.range(1.0f), c * 1.5f, g_rand.range(15, 20));
+		psys_spawn(pos, v, 0.9f, g_rand.range(6.0f, 10.0f) * psize, 1.0f * psize, g_rand.range(1.0f), c * 1.5f, g_rand.range(15, 20));
 	}
 
 	for(int i = 0; i < num_b; i++) {
 		vec2 v = rotation(g_rand.range(PI)) * square(0.5f + g_rand.rand(1.0f)) * 350.0f * strength;
 
-		psys_spawn(pos, v, 0.9f, 2.0f, 2.0f,  g_rand.range(1.0f), c * 2.5f, g_rand.range(8, 12));
+		psys_spawn(pos, v, 0.9f, 2.0f * psize, 2.0f * psize,  g_rand.range(1.0f), c * 2.5f, g_rand.range(8, 12));
 	}
 }
