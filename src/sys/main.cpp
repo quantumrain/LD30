@@ -125,7 +125,7 @@ void DoFrame() {
 		if (XInputGetState(0, &state) == ERROR_SUCCESS) {
 			gJoyLeft			= do_stick(state.Gamepad.sThumbLX, state.Gamepad.sThumbLY);
 			gJoyRight			= do_stick(state.Gamepad.sThumbRX, state.Gamepad.sThumbRY);
-			gJoyA				= (state.Gamepad.wButtons & XINPUT_GAMEPAD_A) != 0;
+			gJoyA				= ((state.Gamepad.wButtons & XINPUT_GAMEPAD_A) != 0) || ((state.Gamepad.wButtons & XINPUT_GAMEPAD_START) != 0);
 			stick_check_time	= 0;
 
 #ifdef _DEBUG
