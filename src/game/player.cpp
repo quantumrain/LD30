@@ -9,7 +9,7 @@ player::player() : unit(ET_PLAYER), _reload_time(), _health_recharge(), _shield_
 	_colour = colours::GREEN * 1.5f;
 	_radius = 6.0f;
 	_health = 3;
-	_shield_time = 40;
+	_shield_time = 0;
 }
 
 void player::init() {
@@ -50,8 +50,12 @@ void player::tick() {
 	}
 
 	if (_shield_time > 0) {
-		if (--_shield_time <= 0) {
-			SoundPlay(sound_id::PLAYER_SHIELD_END, 1.0f, 0.75f);
+		_shield_time--;
+
+		if (_shield_time <= 30) {
+			if ((_shield_time % 10) == 0) {
+				SoundPlay(sound_id::PLAYER_SHIELD_END, 1.0f, 0.5f);
+			}
 		}
 	}
 
@@ -96,7 +100,13 @@ void player::draw(draw_context* dc) {
 
 	c *= colour(1.5f, 1.0f);
 
+	bool shield = false;
+
 	if (_shield_time > 0) {
+		shield = (_shield_time > 30) || ((_shield_time % 10) < 5);
+	}
+
+	if (shield) {
 		dc->rect(-vec2(r * 1.5f), vec2(r * 1.5f), c * 2.5f);
 		dc->rect(-vec2(r * 1.25f), vec2(r * 1.25f), colour(0.0f, 1.0f));
 	}

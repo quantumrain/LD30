@@ -16,7 +16,8 @@ enum entity_flag {
 	EF_SPAWNING			= 0x20,
 	EF_UNIT				= 0x40,
 	EF_PICKUP			= 0x80,
-	EF_BOMB				= 0x100
+	EF_BOMB				= 0x100,
+	EF_MESSAGE			= 0x200,
 };
 
 enum entity_type {
@@ -26,9 +27,9 @@ enum entity_type {
 	ET_MINI_ASTEROID,
 	ET_SHOOTING_STAR,
 	ET_TRACKER,
-	ET_DODGER,
 	ET_PICKUP,
-	ET_BOMB
+	ET_BOMB,
+	ET_MESSAGE
 };
 
 struct entity {
@@ -142,6 +143,16 @@ struct pickup : entity {
 	int _time;
 };
 
+struct message : entity {
+	message();
+
+	virtual void tick();
+	virtual void draw(draw_context* dc);
+
+	char _text[64];
+	int _time;
+};
+
 struct tracker : unit {
 	tracker();
 
@@ -224,8 +235,12 @@ struct world {
 	u64 score;
 	u64 multi;
 
+	u64 warning_at;
+
 	u64 hiscore;
 	bool had_hiscore;
+
+	int end_timer;
 
 	world();
 };
@@ -254,6 +269,7 @@ void spawn_asteroid(world* w);
 void spawn_mini_asteroids(world* w, vec2 pos);
 void spawn_pickup(world* w, vec2 pos);
 void spawn_bomb(world* w, vec2 pos);
+void spawn_message(world* w, vec2 pos, bool important, const char* txt, ...);
 
 // menu
 

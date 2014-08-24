@@ -26,6 +26,7 @@ int gMouseButtons;
 int gMouseTime;
 bool gUsingMouse;
 vec2i gOldMousePos;
+bool gPressedSelect;
 
 int g_LocKeyW;
 int g_LocKeyS;
@@ -152,6 +153,13 @@ void DoFrame() {
 		gOldMousePos = gMousePos;
 		gMouseTime = 0;
 	}
+
+	// ui input "select"
+	static bool was_pressed;
+	bool is_pressed = is_key_down(KEY_FIRE) || (gMouseButtons & 1) || gJoyA;
+	gPressedSelect = !was_pressed && is_pressed;
+	was_pressed = is_pressed;
+	//
 
 	SoundUpdate();
 

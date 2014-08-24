@@ -98,6 +98,7 @@ struct draw_context {
 
 	void set_texture(texture *t);
 	void set_colour(const colour& c);
+	void set_transform(const mat44& m);
 
 	void push_texture(texture* t);
 	void push_colour(const colour& c);

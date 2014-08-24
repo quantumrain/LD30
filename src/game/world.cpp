@@ -18,7 +18,7 @@ template<typename C> void prune(C& c) {
 
 // world
 
-world::world() : player(), shake(), spawn_time(), level_time(), kills(), score(), multi(), hiscore(), had_hiscore() {
+world::world() : player(), shake(), spawn_time(), level_time(), kills(), score(), multi(), warning_at(), hiscore(), had_hiscore(), end_timer() {
 }
 
 void world_init(world* w) {
@@ -38,7 +38,10 @@ void world_init(world* w) {
 	w->score		= 0;
 	w->multi		= 1;
 
+	w->warning_at	= 1000;
+
 	w->had_hiscore	= w->hiscore == 0;
+	w->end_timer	= 0;
 }
 
 void world_clear(world* w) {
@@ -132,6 +135,10 @@ void world_update(world* w) {
 		if (!w->had_hiscore) {
 			w->had_hiscore = true;
 			SoundPlay(sound_id::HISCORE_BEAT, 1.0f, 1.5f);
+
+			if (player* p = w->player) {
+				spawn_message(w, p->_pos, true, "New Highscore!");
+			}
 		}
 	}
 }
@@ -194,6 +201,7 @@ void world_render(world* w, draw_context* dc) {
 
 	// entities
 
+	for(auto e : w->entities) if (e->_flags & EF_MESSAGE) e->render(dc);
 	for(auto e : w->entities) if (e->_flags & EF_BOMB) e->render(dc);
 
 	psys_render(dc);

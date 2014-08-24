@@ -91,6 +91,8 @@ extern vec2 gJoyLeft;
 extern vec2 gJoyRight;
 extern bool gJoyA;
 
+extern bool gPressedSelect;
+
 bool is_key_down(key_press k);
 
 // Debug

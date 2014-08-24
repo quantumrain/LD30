@@ -65,6 +65,17 @@ void tracker::draw(draw_context* dc) {
 		dc->rect(-vec2(r), vec2(r), c);
 		dc->pop_transform();
 	}
+
+	if (_world->level_time < 400) {
+		float f = clamp(400 - _world->level_time, 0, 15) / 15.0f;
+
+		if (_world->kills < 3) {
+			if (!(_flags & EF_SPAWNING)) {
+				dc->set_transform(translate(vec3(_pos, 0.0f)));
+				draw_string(dc, vec2(_radius + 8.0f, 0.0f), 0.8f, TEXT_VCENTRE, colour(f), "SHOOT ME!");
+			}
+		}
+	}
 }
 
 void tracker::damage(damage_desc* dd) {

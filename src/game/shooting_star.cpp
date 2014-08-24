@@ -5,7 +5,7 @@
 extern random g_rand;
 
 shooting_star::shooting_star() : unit(ET_SHOOTING_STAR), _flash(), _tada() {
-	_flags |= EF_USE_OUTER_LIMIT | EF_ENEMY;
+	_flags |= EF_ENEMY;
 	_colour = colour(1.0f, 0.15f, 0.1f, 1.0f);
 	_radius = 5.0f;
 
@@ -119,6 +119,11 @@ void spawn_shooting_star(world* w, entity* instigator) {
 
 	vec2 p = instigator->_pos;
 	vec2 v = normalise(w->player->_pos - p) * 250.0f + w->r.range(vec2(10.0f));
+
+	aabb2 bb = inflate(w->limit, -(ent->_radius + 1.0f));
+
+	p.x = clamp(p.x, bb.min.x, bb.max.x);
+	p.y = clamp(p.y, bb.min.y, bb.max.y);
 
 	ent->_pos = p;
 	ent->_desired_vel = v;

@@ -46,8 +46,12 @@ void game_update() {
 			bool reset = is_key_down(KEY_ESCAPE);
 
 			if (g_world.player == 0) {
-				if (is_key_down(KEY_FIRE) || (gMouseButtons & 1) || gJoyA)
-					reset = true;
+				if (++g_world.end_timer > 30) {
+					if (gPressedSelect) {
+						reset = true;
+						gPressedSelect = false;
+					}
+				}
 			}
 
 			if (reset) {
@@ -65,6 +69,8 @@ void game_update() {
 }
 
 void game_render() {
+	world* w = &g_world;
+
 	draw_context dc(&g_dl_world);
 	draw_context dc_ui(&g_dl_ui);
 
@@ -76,12 +82,22 @@ void game_render() {
 		break;
 
 		case game_state::GAME:
-			world_render(&g_world, &dc);
+			world_render(w, &dc);
 
 			draw_string(&dc_ui, vec2(5.0f, 5.0f), 1.5f, 0, colours::SILVER, "%I64i", g_world.score);
 			draw_string(&dc_ui, vec2(5.0f, 17.5f), 0.75f, 0, colours::SILVER, "x%I64i", g_world.multi);
 
-			draw_string(&dc_ui, vec2(635.0f, 5.0f), 1.5f, DT_RIGHT, colours::SILVER, "%I64i", g_world.hiscore);
+			draw_string(&dc_ui, vec2(635.0f, 5.0f), 1.5f, TEXT_RIGHT, colours::SILVER, "%I64i", g_world.hiscore);
+
+			if (w->end_timer > 30) {
+				float f = clamp((w->end_timer - 30) / 15.0f, 0.0f, 1.0f);
+
+				draw_string(&dc_ui, vec2(320.0f, 80.0f), 3.0f, TEXT_CENTRE, colour(colours::SILVER) * f, "GAME OVER");
+
+				const char* str = w->had_hiscore ? "New highscore" : "Score";
+
+				draw_string(&dc_ui, vec2(320.0f, 110.0f), 2.0f, TEXT_CENTRE, colour(colours::SILVER) * f, "%s: %I64i", str, g_world.score);
+			}
 		break;
 	}
 }

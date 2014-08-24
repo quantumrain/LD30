@@ -40,6 +40,8 @@ void unit::killed(damage_desc* dd) {
 			//_world->score += 5 * _world->multi;
 
 			spawn_pickup(_world, _pos);
+
+			if ((_world->multi % 10) == 0) spawn_message(_world, _pos, false, "x%I64i", _world->multi);
 		}
 	}
 

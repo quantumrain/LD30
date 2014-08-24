@@ -140,6 +140,13 @@ void draw_context::set_colour(const colour& c) {
 	_colour.back() = c;
 }
 
+void draw_context::set_transform(const mat44& m) {
+	if (_transform.size() > 1)
+		_transform.back() = _transform[_transform.size() - 2] * m;
+	else
+		_transform.back() = m;
+}
+
 void draw_context::push_texture(texture* t) {
 	_texture.push_back(t);
 }

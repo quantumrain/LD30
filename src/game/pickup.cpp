@@ -30,6 +30,16 @@ void pickup::tick() {
 			
 			_world->score += 5 * _world->multi;
 
+			if (_world->score >= _world->warning_at) {
+				spawn_message(_world, _pos, true, "%I64i", _world->warning_at);
+
+				if (_world->warning_at < 10000)				_world->warning_at += 1000;
+				else if (_world->warning_at < 100000)		_world->warning_at += 10000;
+				else if (_world->warning_at < 1000000)		_world->warning_at += 100000;
+				else if (_world->warning_at < 10000000)		_world->warning_at += 1000000;
+				else if (_world->warning_at < 100000000)	_world->warning_at += 10000000;
+			}
+
 			destroy();
 		}
 		else if (l < square(48.0f)) {
@@ -83,6 +93,15 @@ void pickup::draw(draw_context* dc) {
 	dc->push_transform(rotate_z(deg_to_rad(45.0f)));
 		dc->rect(-vec2(_radius), vec2(_radius), _colour);
 	dc->pop_transform();
+
+	if (_world->level_time < 400) {
+		float f = clamp(400 - _world->level_time, 0, 15) / 15.0f;
+
+		if (_world->score < 15) {
+			if (!(_flags & EF_SPAWNING))
+				draw_string(dc, vec2(_radius + 4.0f, 0.0f), 0.5f, TEXT_VCENTRE, colour(f), "COLLECT ME!");
+		}
+	}
 }
 
 void spawn_pickup(world* w, vec2 pos) {
